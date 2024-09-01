@@ -54,3 +54,18 @@ def checkdb(cursor):
         FOREIGN KEY (email) REFERENCES users(email)
     )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_loan (
+            email VARCHAR(255),
+            aadhar_photo_name VARCHAR(255),
+            aadhar_image LONGBLOB,
+            pan_photo_name VARCHAR(255),
+            pan_image LONGBLOB,
+            passbook_photo_name VARCHAR(255),
+            passbook_image LONGBLOB,
+            profile_photo_name VARCHAR(255),
+            profile_image LONGBLOB,
+            loan_amount BIGINT
+        )      
+        """)

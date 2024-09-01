@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Application</title>
+</head>
+<body>
+    <h1>Welcome to the Bank Application</h1>
+    <div class="buttons-container">
+        <form action="{{ url_for('login_page') }}" method="post">
+            <input type="hidden" name="role" value="manager">
+            <button type="submit">Manager</button>
+        </form>
+        <form action="{{ url_for('login_page') }}" method="post">
+            <input type="hidden" name="role" value="beneficiary">
+            <button type="submit">Beneficiary</button>
+        </form>
+        <form action="{{ url_for('login_page') }}" method="post">
+            <input type="hidden" name="role" value="organizer">
+            <button type="submit">Organizer</button>
+        </form>
+    </div>
+</body>
+</html>

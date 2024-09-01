@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Beneficiary Page</h1>
+<a href="#"><button>Apply for Loan</button></a>
+<div class="cards-container">
+    <div class="card"><a href="#">Manage Profile</a></div>
+    <div class="card"><a href="{{ url_for('loan_information_page') }}">Loan Info</a></div>
+    <div class="card"><a href="{{ url_for('economic_activities_page') }}">Economic Activity</a></div>
+    <div class="card"><a href="#">Income and Savings</a></div>
+    <div class="card"><a href="#">Feedback and Surveys</a></div>
+    <div class="card"><a href="#">Notifications</a></div>
+</div>
+{% endblock %}
