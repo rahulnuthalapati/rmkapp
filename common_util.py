@@ -23,6 +23,9 @@ def do_signup(request_object, cur):
                 "INSERT INTO organizers (name, email, phone, password, bank) VALUES (%s, %s, %s, %s, %s)",
                 (name, email, phone, password, bank)
             )
+        result = cur.fetchall()
+        for row in result:
+            print(row)
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         

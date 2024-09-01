@@ -10,39 +10,41 @@ dbop.checkdb(cursor)
 
 app = Flask(__name__)
 
+current_role = None
+
 @app.route('/')
 def home_page():
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    role = request.form.get('role')
-    if role is None:
-       role = request.args.get('role')
-    return render_template('login.html', role=role)
+    global current_role
+    if request.form.get('role') is not None:
+        current_role = request.form.get('role')
+    return render_template('login.html', role=current_role)
 
 @app.route('/api/login', methods=['POST'])
 def login():
     success = cu.do_login(request, cursor)
     if not success:
        return "Invalid credentials, please try again.", 401
-    role = request.form.get('role')  
-    if role == 'beneficiary':
+    if current_role == 'beneficiary':
         return url_for('beneficiary_page')
-    elif role == 'manager':
+    elif current_role == 'manager':
         return url_for('manager_page')
-    elif role == 'organizer':
+    elif current_role == 'organizer':
         return url_for('organizer_page')
     else:
         return "Invalid role", 401
 
 @app.route('/signup')
 def signup_page():
-    return render_template('signup.html', role=request.args.get('role'))
+    return render_template('signup.html', role=current_role)
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
     cu.do_signup(request, cursor)
+    cnx.commit()
     return url_for('login_page'), 200
 
 @app.route('/beneficiary', methods=['GET', 'POST'])
