@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <style>
+        #bank-field {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Sign Up</h1>
-    <form action="{{ url_for('process_signup') }}" method="post">
+    <h1>{{ role|capitalize }} Signup</h1>
+    <form id="signup-form">
         <div>
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
@@ -17,14 +22,76 @@
             <input type="email" id="email" name="email" required>
         </div>
         <div>
-            <label for="mobile">Mobile Number:</label>
-            <input type="tel" id="mobile" name="mobile" required>
+            <label for="phone">Mobile Number:</label>
+            <input type="tel" id="phone" name="phone" required>
         </div>
         <div>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
         </div>
+        <div id="bank-field">
+            <label for="bank">Select Bank:</label>
+            <select id="bank" name="bank">
+                <option value="">Select a bank</option>
+                <option value="bank1">Bank 1</option>
+                <option value="bank2">Bank 2</option>
+                <option value="bank3">Bank 3</option>
+            </select>
+        </div>
         <button type="submit">Sign Up</button>
     </form>
+    <p id="message"></p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const role = "{{ role }}"; 
+            if (role === 'organizer') {
+                document.getElementById('bank-field').style.display = 'block';
+            } else {
+                document.getElementById('bank-field').style.display = 'none';
+            }
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const bank = document.getElementById('bank') ? document.getElementById('bank').value : ''; // Handle optional field
+            const role = "{{ role }}";
+
+            fetch('{{ url_for("signup") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'password': password,
+                    'bank': bank,
+                    'role': '{{ role }}' 
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(url => {
+                        window.location.href = url; 
+                    });
+                } else {
+                    return response.text().then(errorMessage => {
+                        document.getElementById('message').textContent = errorMessage || 'Sign up failed. Please try again.';
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').textContent = 'An error occurred. Please try again later.';
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,20 +1,31 @@
+import mysql.connector
+
 def do_signup(request_object, cur):
-    name = request_object.json.get('name')
-    email = request_object.json.get('email')
-    phone = request_object.json.get('phone')
-    password = request_object.args.get('password')
-    bank = request_object.json.get('bank')
-    if(request_object.json.get('bank') is not None):
-        bank = request_object.json.get('bank')
-    
-    type = request_object.json.get('type')
-    if type == 'user':
-        cur.execute("INSERT INTO users (name, email, phone, password) VALUES (%s, %s, %s, %s)", (name, email, phone, password))
-    elif type == 'manager':
-        cur.execute("INSERT INTO managers (name, email, phone, password) VALUES (%s, %s, %s, %s)", (name, email, phone, password))
-    elif type == 'organizer':
-        cur.execute("INSERT INTO organizers (name, email, phone, password, bank) VALUES (%s, %s, %s, %s, %s)", (name, email, phone, password, bank))
-    
+    name = request_object.form.get('name')
+    email = request_object.form.get('email')
+    phone = request_object.form.get('phone')
+    password = request_object.form.get('password')
+    user_type = request_object.form.get('role')
+    bank = request_object.form.get('bank') if user_type == 'organizer' else None
+    try:
+        if user_type == 'beneficiary':
+            cur.execute(
+                "INSERT INTO users (name, email, phone, password) VALUES (%s, %s, %s, %s)",
+                (name, email, phone, password)
+            )
+        elif user_type == 'manager':
+            cur.execute(
+                "INSERT INTO managers (name, email, phone, password) VALUES (%s, %s, %s, %s)",
+                (name, email, phone, password)
+            )
+        elif user_type == 'organizer':
+            cur.execute(
+                "INSERT INTO organizers (name, email, phone, password, bank) VALUES (%s, %s, %s, %s, %s)",
+                (name, email, phone, password, bank)
+            )
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        
 def do_login(request_object, cur):
     email = request_object.form.get('email')
     password = request_object.form.get('password')

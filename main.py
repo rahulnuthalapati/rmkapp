@@ -16,13 +16,16 @@ def home_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    return render_template('login.html', role=request.form.get('role'))
+    role = request.form.get('role')
+    if role is None:
+       role = request.args.get('role')
+    return render_template('login.html', role=role)
 
 @app.route('/api/login', methods=['POST'])
 def login():
     success = cu.do_login(request, cursor)
-    # if not success:
-    #     return "Invalid credentials, please try again.", 401
+    if not success:
+       return "Invalid credentials, please try again.", 401
     role = request.form.get('role')  
     if role == 'beneficiary':
         return url_for('beneficiary_page')
@@ -30,15 +33,17 @@ def login():
         return url_for('manager_page')
     elif role == 'organizer':
         return url_for('organizer_page')
+    else:
+        return "Invalid role", 401
 
 @app.route('/signup')
 def signup_page():
-    return render_template('signup.html')
+    return render_template('signup.html', role=request.args.get('role'))
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
     cu.do_signup(request, cursor)
-    return redirect(url_for('login')), 200
+    return url_for('login_page'), 200
 
 @app.route('/beneficiary', methods=['GET', 'POST'])
 def beneficiary_page():
