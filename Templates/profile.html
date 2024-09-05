@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            width: 30px;
+            cursor: pointer;
+        }
+
+        .header h1 {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .profile-picture {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-picture img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #ddd;
+        }
+
+        .profile-picture .add-icon {
+            position: relative;
+            bottom: 30px;
+            left: 30px;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .input-group p {
+            font-size: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <img src="back-icon.png" alt="Back">
+            <h1>Manage Profile</h1>
+        </div>
+
+        <div class="profile-picture">
+            <img src="profile-placeholder.png" id="profile-pic" alt="Profile Picture">
+            <div class="add-icon">+</div>
+        </div>
+
+        <form id="profileForm">
+            <div class="input-group">
+                <label for="name">Name</label>
+                <p id="name-display"></p>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="input-group">
+                <label for="dob">Date of Birth</label>
+                <p id="dob-display"></p>
+                <input type="text" id="dob" name="dob" required>
+            </div>
+            <div class="input-group">
+                <label for="aadhar">Aadhar Card Number</label>
+                <p id="aadhar-display"></p>
+                <input type="text" id="aadhar" name="aadhar" required>
+            </div>
+            <div class="input-group">
+                <label for="phone">Contact Number</label>
+                <p id="contact-display"></p>
+                <input type="text" id="phone" name="phone" required>
+            </div>
+            <div class="input-group">
+                <label for="bank">Bank Account No</label>
+                <p id="bank-display"></p>
+                <input type="text" id="bank" name="bank" required>
+            </div>
+            <p id="error-message" class="error hidden"></p>
+            <button type="button" id="editButton" class="button">Update Profile</button>
+            <button type="submit" id="saveButton" class="button hidden">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch profile data from the API
+            fetch('/api/profileinfo')
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the profile fields with the fetched data
+                    document.getElementById('name-display').textContent = data.name;
+                    document.getElementById('dob-display').textContent = data.dob;
+                    document.getElementById('aadhar-display').textContent = data.aadhar;
+                    document.getElementById('contact-display').textContent = data.phone;
+                    document.getElementById('bank-display').textContent = data.bank;
+
+                    // Populate the input fields with the fetched data (in case of editing)
+                    document.getElementById('name').value = data.name;
+                    document.getElementById('dob').value = data.dob;
+                    document.getElementById('aadhar').value = data.aadhar;
+                    document.getElementById('phone').value = data.phone;
+                    document.getElementById('bank').value = data.bank;
+                })
+                .catch(error => console.error('Error fetching profile data:', error));
+        });
+
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const formFields = document.querySelectorAll('input');
+        const displayFields = document.querySelectorAll('p');
+        const addIcon = document.querySelector('.add-icon');
+
+        editButton.addEventListener('click', () => {
+            displayFields.forEach(field => field.classList.add('hidden'));
+            formFields.forEach(field => field.style.display = 'block');
+            editButton.classList.add('hidden');
+            saveButton.classList.remove('hidden');
+            addIcon.style.display = 'flex';
+        });
+
+        saveButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent the form from submitting the traditional way
+
+            // Collect the form data
+            const profileData = {
+                name: document.getElementById('name').value,
+                dob: document.getElementById('dob').value,
+                aadhar: document.getElementById('aadhar').value,
+                phone: document.getElementById('phone').value,
+                bank: document.getElementById('bank').value
+            };
+
+            // Send the form data to the API using fetch
+            fetch('/api/update_profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the display fields with the new values
+                    document.getElementById('name-display').textContent = profileData.name;
+                    document.getElementById('dob-display').textContent = profileData.dob;
+                    document.getElementById('aadhar-display').textContent = profileData.aadhar;
+                    document.getElementById('contact-display').textContent = profileData.phone;
+                    document.getElementById('bank-display').textContent = profileData.bank;
+
+                    // Switch back to viewing mode
+                    displayFields.forEach(field => field.classList.remove('hidden'));
+                    formFields.forEach(field => field.style.display = 'none');
+                    editButton.classList.remove('hidden');
+                    saveButton.classList.add('hidden');
+                    addIcon.style.display = 'none';
+
+                    // Clear any existing error message
+                    document.getElementById('error-message').textContent = '';
+                } else {
+                    // Display a general error message
+                    document.getElementById('error-message').textContent = data.error || 'An error occurred while updating your profile. Please try again.';
+                    document.getElementById('error-message').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                // Display a generic error message
+                document.getElementById('error-message').textContent = 'An error occurred while updating your profile. Please try again later.';
+                document.getElementById('error-message').classList.remove('hidden');
+            });
+    });
+
+    </script>
+
+</body>
+</html>

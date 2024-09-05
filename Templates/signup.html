@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <style>
-        #bank-field {
-            display: none;
-        }
-    </style>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='Styles/style.css') }}">
 </head>
 <body>
     <h1>{{ role|capitalize }} Signup</h1>
@@ -60,7 +56,6 @@
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
             const bank = document.getElementById('bank') ? document.getElementById('bank').value : ''; // Handle optional field
-            const role = "{{ role }}";
 
             fetch('{{ url_for("signup") }}', {
                 method: 'POST',
@@ -73,7 +68,6 @@
                     'phone': phone,
                     'password': password,
                     'bank': bank,
-                    'role': '{{ role }}' 
                 })
             })
             .then(response => {

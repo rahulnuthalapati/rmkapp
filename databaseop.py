@@ -1,5 +1,5 @@
 def checkdb(cursor):
-    # cursor.execute("DROP DATABASE IF EXISTS rmkdb")
+    #cursor.execute("DROP DATABASE IF EXISTS rmkdb")
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
     
@@ -7,12 +7,14 @@ def checkdb(cursor):
     CREATE TABLE IF NOT EXISTS users (
         name VARCHAR(255),
         email VARCHAR(255),
+        type ENUM('beneficiary', 'manager', 'organizer'),
         phone BIGINT,
         password VARCHAR(255),
         dob DATE,
         aadharno BIGINT,
         bankaccno BIGINT,
-        PRIMARY KEY (email),
+        bank VARCHAR(255),
+        PRIMARY KEY (email, type),
         UNIQUE (aadharno),
         UNIQUE (bankaccno)
     )

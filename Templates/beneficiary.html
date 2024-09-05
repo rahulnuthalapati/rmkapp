@@ -1,14 +1,40 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beneficiary Page</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='Styles/style.css') }}">
+</head>
+<body>
+    <h1>Beneficiary Page</h1>
+    <form onsubmit="return false;">
+        <button type="button" onclick="handleButtonClick('apply_for_loan')">Apply for Loan</button>
+        <button type="button" onclick="handleButtonClick('manage_profile')" class="card">Manage Profile</button>
+        <button type="button" onclick="handleButtonClick('loan_info')" class="card">Loan Info</button>
+        <button type="button" onclick="handleButtonClick('economic_activity')" class="card">Economic Activity</button>
+        <button type="button" onclick="handleButtonClick('income_and_savings')" class="card">Income and Savings</button>
+        <button type="button" onclick="handleButtonClick('feedback_and_surveys')" class="card">Feedback and Surveys</button>
+        <button type="button" onclick="handleButtonClick('notifications')" class="card">Notifications</button>
+    </form>
+    <script>
+        const urls = {
+            apply_for_loan: "{{ url_for('loan_application_page') }}",
+            manage_profile: "{{ url_for('profile_page') }}",
+            loan_info: "{{ url_for('loan_information_page') }}",
+            economic_activity: "{{ url_for('economic_activities_page') }}",
+            income_and_savings: "{{ url_for('income_savings_page') }}",
+            feedback_and_surveys: "{{ url_for('feedback_page') }}",
+            notifications: "{{ url_for('notifications_page') }}"
+        };
 
-{% block content %}
-<h1>Beneficiary Page</h1>
-<a href="#"><button>Apply for Loan</button></a>
-<div class="cards-container">
-    <div class="card"><a href="#">Manage Profile</a></div>
-    <div class="card"><a href="{{ url_for('loan_information_page') }}">Loan Info</a></div>
-    <div class="card"><a href="{{ url_for('economic_activities_page') }}">Economic Activity</a></div>
-    <div class="card"><a href="#">Income and Savings</a></div>
-    <div class="card"><a href="#">Feedback and Surveys</a></div>
-    <div class="card"><a href="#">Notifications</a></div>
-</div>
-{% endblock %}
+        function handleButtonClick(value) {
+            const url = urls[value];
+            if (url) {
+                window.location.href = url;
+            } else {
+                console.error('Unknown action:', value);
+            }
+        }
+    </script>
+</html>

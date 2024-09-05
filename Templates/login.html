@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='Styles/style.css') }}">
 </head>
 <body>
     <h1>{{ role|capitalize }} Login</h1>
     <form id="login-form">
-        <input type="hidden" name="role" value="{{role}}">
         <div>
             <label for="email">Email:</label>
             <input type="text" id="email" name="email" required>
@@ -18,7 +18,7 @@
             <input type="password" id="password" name="password" required>
         </div>
         <button type="submit">Login</button>
-        <span>Don't have an account? <a href="{{url_for('signup_page', role=role)}}">Register</a></span>
+        <span>Don't have an account? <a href="{{url_for('signup_page')}}">Register</a></span>
     </form>
     <p id="error-message"></p> 
 
@@ -28,7 +28,6 @@
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const role = document.querySelector('input[name="role"]').value;
 
             fetch('/api/login', {
                 method: 'POST',
@@ -38,7 +37,6 @@
                 body: new URLSearchParams({
                     'email': email,
                     'password': password,
-                    'role': role
                 })
             })
             .then(response => {
