@@ -1,13 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Page</title>
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='Styles/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap');
+
+        /* Global Styles */
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Box (Card) Styles */
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        /* Button Styling */
+        button {
+            padding: 15px 20px;
+            background-color: #4a4a4a;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #2c2c2c;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .greeting {
+            position: absolute;
+            top: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Beneficiary and Loan Management</h1>
-    <button onclick="location.href='beneficiary_profiles.html'">Beneficiary Profiles</button>
-    <button onclick="location.href='loan_management.html'">Loan Management</button>
-    <button onclick="location.href='system_settings.html'">System Settings</button>
+    <div class="greeting"></div>
+    <div class="container">
+        <h1>Beneficiary and Loan Management</h1>
+
+        <button type="button" onclick="handleButtonClick('beneficiary_profiles')">
+            <i class="fas fa-users"></i>
+            Beneficiary Profiles
+        </button>
+        <button type="button" onclick="handleButtonClick('loan_management')">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Loan Management
+        </button>
+        <button type="button" onclick="handleButtonClick('system_settings')">
+            <i class="fas fa-cog"></i>
+            System Settings
+        </button>
+    </div>
+    <script>
+        async function fetchUserName() {
+            try {
+                const response = await fetch('/api/profileinfo');
+                const data = await response.json();
+                const userName = data.name || 'Manager';
+                document.querySelector('.greeting').textContent = `Hello ${userName}!`;
+            } catch (error) {
+                console.error('Error fetching user profile info:', error);
+            }
+        }
+
+        fetchUserName(); 
+
+        const urls = {
+            beneficiary_profiles: "{{ url_for('beneficiary_profiles_page') }}",
+            loan_management: "{{ url_for('loan_management_page') }}",
+            system_settings: "{{ url_for('system_settings') }}"
+        };
+
+        function handleButtonClick(value) {
+            const url = urls[value];
+            if (url) {
+                window.location.href = url;
+            } else {
+                console.error('Unknown action:', value);
+            }
+        }
+    </script>
 </body>
 </html>

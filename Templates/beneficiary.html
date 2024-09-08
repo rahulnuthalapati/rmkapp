@@ -4,20 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beneficiary Page</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static',filename='Styles/style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            position: relative;
+            overflow: hidden; /* Prevent scrolling issues */
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .greeting {
+            position: absolute;
+            top: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            margin: 0 auto; /* Center the container horizontally */
+        }
+
+        .header {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            font-size: 28px;
+            margin: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .notifications-icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            cursor: pointer;
+            color: #4a4a4a;
+        }
+
+        .notifications-icon:hover {
+            color: #2c2c2c;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .grid button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .grid button i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .grid button:hover {
+            background-color: #2c2c2c;
+        }
+
+        .grid button:focus {
+            outline: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Beneficiary Page</h1>
-    <form onsubmit="return false;">
-        <button type="button" onclick="handleButtonClick('apply_for_loan')">Apply for Loan</button>
-        <button type="button" onclick="handleButtonClick('manage_profile')" class="card">Manage Profile</button>
-        <button type="button" onclick="handleButtonClick('loan_info')" class="card">Loan Info</button>
-        <button type="button" onclick="handleButtonClick('economic_activity')" class="card">Economic Activity</button>
-        <button type="button" onclick="handleButtonClick('income_and_savings')" class="card">Income and Savings</button>
-        <button type="button" onclick="handleButtonClick('feedback_and_surveys')" class="card">Feedback and Surveys</button>
-        <button type="button" onclick="handleButtonClick('notifications')" class="card">Notifications</button>
-    </form>
+    <div class="content-wrapper">
+        <div class="greeting"></div>
+        <div class="container">
+            <div class="header">
+                <h2>Beneficiary Page</h2>
+                <i class="fas fa-bell notifications-icon" onclick="handleButtonClick('notifications')"></i>
+            </div>
+            
+            <div class="grid">
+                <button type="button" onclick="handleButtonClick('apply_for_loan')">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    Apply for Loan
+                </button>
+                <button type="button" onclick="handleButtonClick('loan_info')">
+                    <i class="fas fa-info-circle"></i>
+                    Loan Info
+                </button>
+                <button type="button" onclick="handleButtonClick('economic_activity')">
+                    <i class="fas fa-briefcase"></i>
+                    Economic Activity
+                </button>
+                <button type="button" onclick="handleButtonClick('income_and_savings')">
+                    <i class="fas fa-piggy-bank"></i>
+                    Income and Savings
+                </button>
+                <button type="button" onclick="handleButtonClick('feedback_and_surveys')">
+                    <i class="fas fa-comment-alt"></i>
+                    Feedback and Surveys
+                </button>
+                <button type="button" onclick="handleButtonClick('manage_profile')">
+                    <i class="fas fa-user-cog"></i>
+                    Manage Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Fetch user profile info and update the greeting text
+        async function fetchUserName() {
+            try {
+                const response = await fetch('/api/profileinfo');
+                const data = await response.json();
+                const userName = data.name || 'Beneficiary';
+                document.querySelector('.greeting').textContent = `Hello ${userName}!`;
+            } catch (error) {
+                console.error('Error fetching user profile info:', error);
+            }
+        }
+
+        fetchUserName();
+
         const urls = {
             apply_for_loan: "{{ url_for('loan_application_page') }}",
             manage_profile: "{{ url_for('profile_page') }}",
@@ -37,4 +181,5 @@
             }
         }
     </script>
+</body>
 </html>

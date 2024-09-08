@@ -1,5 +1,5 @@
 def checkdb(cursor):
-    #cursor.execute("DROP DATABASE IF EXISTS rmkdb")
+    # cursor.execute("DROP DATABASE IF EXISTS rmkdb")
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
     
@@ -14,6 +14,7 @@ def checkdb(cursor):
         aadharno BIGINT,
         bankaccno BIGINT,
         bank VARCHAR(255),
+        profile_pic VARCHAR(255),
         PRIMARY KEY (email, type),
         UNIQUE (aadharno),
         UNIQUE (bankaccno)
@@ -45,8 +46,7 @@ def checkdb(cursor):
         monthly_savings_contributions BIGINT,
         PRIMARY KEY (email),
         FOREIGN KEY (email) REFERENCES users(email)
-    )
-    """)
+    )""")
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS feedback (
@@ -58,16 +58,13 @@ def checkdb(cursor):
     """)
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS user_loan (
-            email VARCHAR(255),
-            aadhar_photo_name VARCHAR(255),
-            aadhar_image LONGBLOB,
-            pan_photo_name VARCHAR(255),
-            pan_image LONGBLOB,
-            passbook_photo_name VARCHAR(255),
-            passbook_image LONGBLOB,
-            profile_photo_name VARCHAR(255),
-            profile_image LONGBLOB,
-            loan_amount BIGINT
-        )      
-        """)
+    CREATE TABLE IF NOT EXISTS user_loan (
+        email VARCHAR(255),
+        aadhar_image_url VARCHAR(255),
+        pan_image_url VARCHAR(255),
+        passbook_image_url VARCHAR(255),
+        profile_image_url VARCHAR(255),
+        loan_amount BIGINT,
+        FOREIGN KEY (email) REFERENCES users(email)
+    )      
+    """)
