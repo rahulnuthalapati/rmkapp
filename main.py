@@ -17,7 +17,21 @@ app = Flask(__name__, static_folder='static')
 current_role = None
 current_user = None
 
+# @app.before_request
+# def filter():
+#     if current_role is None and current_user is None:
+#         if request.path == '/login' or request.path == '/api/login' or request.endpoint == 'login_page' or request.endpoint == 'login': 
+#             return
+#         if current_role is None:
+#             return redirect('home')
+#     if current_user is None and current_role is not None:
+#         return redirect('login')
+        
 @app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/home')
 def home_page():
     return render_template('index.html')
 
@@ -30,6 +44,9 @@ def login_page():
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    global current_role
+    if current_role is None:
+        return "Please select role from homepage, redirecting in 3 seconds...", 401
     global current_user
     success = cu.do_login(request, cursor, current_role)
     if not success:
@@ -50,10 +67,12 @@ def signup_page():
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
+    print("signup for", request.form.get('email'), "is in progress...")
     success = cu.do_signup(request, cursor, current_role)
     if not success:
        return "Error occured while creating account, check logs in server.", 520
     cnx.commit()
+    print("signup for", request.form.get('email'), "is successful")
     return url_for('login_page'), 200
 
 @app.route('/beneficiary', methods=['GET', 'POST'])
@@ -201,9 +220,45 @@ def system_settings():
 def beneficiary_profiles_page():
     return render_template('beneficiary_profiles.html')
 
+@app.route('/api/beneficiary_profiles', methods=['GET'])
+def beneficiary_profiles():
+    profiles = cu.get_beneficiary_profiles(cursor)
+    
+    profiles_for_json = []
+    for profile in profiles:
+        dob = profile[5]
+
+        if isinstance(dob, datetime):
+            dob = dob.strftime('%Y-%m-%d') if dob else None
+        elif isinstance(dob, int):
+            dob = datetime.fromtimestamp(dob).strftime('%Y-%m-%d') if dob else None
+        else:
+            dob = None
+
+        profiles_for_json.append({
+            "name": profile[0],
+            "email": profile[1],
+            "phone": profile[3],
+            "dob": dob,
+            "aadharno": profile[6],
+            "bankaccno": profile[7],
+            "profilePicPath": profile[9] if profile[9] is not None else '/static/images/webpages/blank_profile.webp'
+        })
+        print(profile[9])
+
+    return jsonify(profiles_for_json)
+
 @app.route('/loan_management_page')
 def loan_management_page():
     return render_template('loan_management.html')
+
+@app.route('/api/logout', methods=['GET'])
+def logout():
+    global current_user
+    current_user = None
+    global current_role
+    current_role = None
+    return redirect('/home')
 
 if __name__ == '__main__':
     app.run(debug=True)

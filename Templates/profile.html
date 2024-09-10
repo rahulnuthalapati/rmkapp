@@ -167,7 +167,7 @@
         </div>
 
         <div class="profile-picture">
-            <img src="/static/images/profile_pictures/blank_profile.webp" id="profile-pic" alt="Profile Picture">
+            <img src="/static/images/webpages/blank_profile.webp" id="profile-pic" alt="Profile Picture">
             <div class="add-icon">+</div>
             <input type="file" id="profilePicInput" class="file-input" accept="image/*">
         </div>
@@ -213,7 +213,7 @@
                     document.getElementById('phone').value = data.phone;
                     document.getElementById('bankaccno').value = data.bankaccno;
                 
-                    const profilePic = data.profilePicPath ? data.profilePicPath + '?' + new Date().getTime() : '/static/images/profile_pictures/blank_profile.webp';
+                    const profilePic = data.profilePicPath ? data.profilePicPath + '?' + new Date().getTime() : '/static/images/webpages/blank_profile.webp';
                     document.getElementById('profile-pic').src = profilePic;
                 
                 })

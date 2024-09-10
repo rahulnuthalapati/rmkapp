@@ -41,7 +41,6 @@
         .container {
             width: 90%;
             max-width: 600px;
-            background-color: #fff;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
@@ -58,20 +57,6 @@
             margin: 0;
             color: #333;
             text-align: center;
-        }
-
-        .notifications-icon {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            cursor: pointer;
-            color: #4a4a4a;
-        }
-
-        .notifications-icon:hover {
-            color: #2c2c2c;
         }
 
         .grid {
@@ -107,6 +92,78 @@
         .grid button:focus {
             outline: none;
         }
+
+        .top-right-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-button {
+            background-color: #fff;
+            border-radius: 20px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .logout-button {
+            background-color: #fff;
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .logout-button span {
+            margin-right: 5px;
+        }
+
+        .logout-button i {
+            font-size: 16px;
+        }
+
+        .logout-button:hover, .notification-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .notification-overlay {
+            position: absolute;
+            top: calc(100% + 10px); /* Adjust this value to move the overlay lower */
+            right: 0;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+            min-width: 300px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        .notification-overlay.show {
+            display: block;
+        }
+
+        .notification-content {
+            padding: 10px;
+            text-align: center; /* Center text horizontally */
+        }
+
+        .notification-content div {
+            margin-bottom: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -115,9 +172,23 @@
         <div class="container">
             <div class="header">
                 <h2>Beneficiary Page</h2>
-                <i class="fas fa-bell notifications-icon" onclick="handleButtonClick('notifications')"></i>
+                <!-- <i class="fas fa-bell notifications-icon" onclick="handleButtonClick('notifications')"></i> -->
             </div>
-            
+            <div class="top-right-buttons">
+                <div class="notification-button" onclick="handleButtonClick('notifications')">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <div class="logout-button" onclick="handleLogout()">
+                  <span>Logout</span>
+                  <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div class="notification-overlay" id="notification-overlay">
+                    <div class="notification-content" id="notification-content">
+                        <!-- Notifications or "No notifications right now" message will be inserted here -->
+                    </div>
+                </div>                
+              </div>
+
             <div class="grid">
                 <button type="button" onclick="handleButtonClick('apply_for_loan')">
                     <i class="fas fa-hand-holding-usd"></i>
@@ -180,6 +251,107 @@
                 console.error('Unknown action:', value);
             }
         }
+
+        let notificationOverlayVisible = false;
+
+        function handleButtonClick(value) {
+            if (value === 'notifications') {
+                toggleNotificationOverlay();
+            } else {
+                const url = urls[value];
+                if (url) {
+                    window.location.href = url;
+                } else {
+                    console.error('Unknown action:', value);
+                }
+            }
+        }
+
+        function toggleNotificationOverlay() {
+            const notificationOverlay = document.getElementById('notification-overlay');
+            if (notificationOverlayVisible) {
+                hideNotificationOverlay();
+            } else {
+                showNotificationOverlay();
+                fetchNotifications();
+                // Attach click event to close overlay when clicking outside
+                document.addEventListener('click', closeOverlayOnClick);
+            }
+            notificationOverlayVisible = !notificationOverlayVisible;
+        }
+
+        function closeOverlayOnClick(event) {
+            const notificationOverlay = document.getElementById('notification-overlay');
+            // Close the overlay only if the click is outside of it
+            if (notificationOverlayVisible && !notificationOverlay.contains(event.target) && !event.target.closest('.notification-button')) {
+                hideNotificationOverlay();
+                document.removeEventListener('click', closeOverlayOnClick);
+                notificationOverlayVisible = false;
+            }
+        }
+
+        function showNotificationOverlay() {
+            document.getElementById('notification-overlay').classList.add('show');
+        }
+
+        function hideNotificationOverlay() {
+            document.getElementById('notification-overlay').classList.remove('show');
+        }
+
+        function fetchNotifications() {
+            fetch('/api/notifications')
+                .then(response => {
+                    // Check if the response is OK, otherwise throw an error
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json(); // Attempt to parse JSON
+                })
+                .then(data => {
+                    const notificationContent = document.getElementById('notification-content');
+                    notificationContent.innerHTML = '';  // Clear previous notifications
+
+                    // Handle case where no notifications are returned or an empty array
+                    if (!data || data.length === 0) {
+                        const noNotificationMessage = document.createElement('div');
+                        noNotificationMessage.textContent = 'No notifications right now';
+                        noNotificationMessage.style.color = '#333'; // Optional styling
+                        noNotificationMessage.style.textAlign = 'center'; // Center the message
+                        notificationContent.appendChild(noNotificationMessage);
+                    } else {
+                        // If notifications exist, display them
+                        data.forEach(notification => {
+                            const notificationHTML = `<div>${notification.message}</div>`;
+                            notificationContent.insertAdjacentHTML('beforeend', notificationHTML);
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Handle any errors with fetching the data or processing the response
+                    console.error('Error fetching notifications:', error);
+                    
+                    // Display "No notifications right now" message in case of an error
+                    const notificationContent = document.getElementById('notification-content');
+                    notificationContent.innerHTML = '';  // Clear previous content
+                    const errorMessage = document.createElement('div');
+                    errorMessage.textContent = 'No notifications right now';
+                    errorMessage.style.color = '#333'; // Optional styling
+                    errorMessage.style.textAlign = 'center'; // Center the message
+                    notificationContent.appendChild(errorMessage);
+                });
+        }
+
+
+        function handleLogout() {
+            fetch('/api/logout')
+                .then(() => {
+                    window.location.href = '/home';
+                })
+                .catch(() => {
+                    window.location.href = '/home';
+                });
+        }
+
     </script>
 </body>
 </html>

@@ -1,3 +1,10 @@
 body {
     font-family:Verdana;
+    background: url('/static/images/webpages/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.9); /* Add some transparency */
+    z-index: 1;
 }

@@ -24,6 +24,7 @@ def do_signup(request_object, cur, user_type):
     except Exception as err:
         print(f"Error: {err}")
         return False
+    
         
 def do_login(request_object, cur, user_type):
     email = request_object.form.get('email')
@@ -85,4 +86,11 @@ def loan_application(request, cur, user_type, user_details):
         file_paths.get('passport'),
         amount
     ))
+
+
+def get_beneficiary_profiles(cur):
+    cur.execute('SELECT * FROM users WHERE type = "beneficiary"')
+    profiles = cur.fetchall()
+    print(profiles)
+    return profiles
 

@@ -5,7 +5,7 @@ def checkdb(cursor):
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        name VARCHAR(255),
+        name VARCHAR(255), 
         email VARCHAR(255),
         type ENUM('beneficiary', 'manager', 'organizer'),
         phone BIGINT,

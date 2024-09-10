@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loan Request Form</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='/Styles/style.css') }}">
+
     <style>
         /* General Reset */
         * {
@@ -28,19 +30,43 @@
         }
 
         .container {
-            background-color: white;
+            z-index: 1;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 400px;
+            width: 800px; /* Increased width */
             text-align: center;
             margin-top: 20px; /* Space from the top */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
         }
 
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
             color: #333;
+        }
+
+        .form-section {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .input-section {
+            width: 55%;
+        }
+
+        .upload-section {
+            margin-top: 10%;
+            margin-right: 5%;
+            width: 30%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            padding: 10 10px;
+
         }
 
         label {
@@ -67,6 +93,7 @@
             color: white;
             border: none;
             cursor: pointer;
+            width: 200px; /* Set a specific width for the button */
         }
 
         button:hover {
@@ -74,21 +101,14 @@
         }
 
         /* Upload Section Styles */
-        .upload-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
         .upload-section div {
             text-align: center;
-            flex: 1;
         }
 
         .upload-section label {
             display: inline-block;
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             cursor: pointer;
             border-radius: 6px;
             border: 1px solid #ccc;
@@ -117,22 +137,67 @@
             display: none;
         }
 
-        /* Request Amount Styles */
+        /* Container styling */
         .amount-container {
-            display: flex;
-            align-items: center;
             margin-bottom: 20px;
         }
 
-        .amount-container span {
-            font-size: 16px;
-            margin-right: 10px;
-            color: #333;
+        .input-group {
+            display: flex;
+            align-items: center;
+            width: 100%;
         }
 
-        .amount-container input {
-            width: calc(100% - 40px); /* Adjust width to account for the icon */
-            padding-left: 30px; /* Space for the icon inside the input */
+        /* Styling for the rupee symbol */
+        .input-symbol {
+            background-color: #e0e0e0;
+            padding: 0 12px;
+            border: 1px solid #ccc;
+            border-right: none;
+            font-size: 16px;
+            color: #666;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px 0 0 5px; /* Rounded corners on the left side */
+            height: 40px; /* Make sure the height matches the input */
+            line-height: 40px;
+            box-sizing: border-box;
+            position: relative;
+            top: -10px;  /* Adjust as needed */
+        }
+
+        /* Styling for the input field */
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"]
+        {
+
+            width: 100%;
+            padding: 12px; /* Adjust padding if needed */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+
+           
+            /* border: 1px solid #ccc; */
+            /* border-radius: 0 5px 5px 0;Rounded corners on the right side */
+            /* font-size: 16px; */
+            /* width: 100%; */
+            /* outline: none; */
+            height: 40px; 
+            /* box-sizing: border-box; */
+        }
+
+        input[type="number"]{
+            width: 100%;
+            padding: 12px; /* Adjust padding if needed */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            padding: 0 10px;
+            height: 40px; 
+            border-radius: 0 5px 5px 0;/* Rounded corners on the right side */
         }
 
         /* Responsive Design */
@@ -141,6 +206,15 @@
                 width: 100%;
                 padding: 20px;
             }
+            .form-section {
+                flex-direction: column;
+            }
+            .input-section, .upload-section {
+                width: 100%;
+            }
+            .upload-section {
+                grid-template-columns: repeat(1, 1fr);
+            }
         }
 
     </style>
@@ -148,26 +222,31 @@
 <body>
     <div class="container">
         <h1>Loan Request</h1>
-        <form id="loan-request-form">
-            <div>
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div>
-                <label for="dob">Date of Birth:</label>
-                <input type="date" id="dob" name="dob" required>
-            </div>
-            <div>
-                <label for="contact">Contact Number:</label>
-                <input type="tel" id="contact" name="contact" required>
-            </div>
-            <div>
-                <label for="business">Type of Business:</label>
-                <input type="text" id="business" name="business" required>
-            </div>
-            <div class="amount-container">
-                <label for="amount">Enter Rupees </label>
-                <input type="number" id="amount" name="amount" placeholder="Request Amount" required>
+        <form id="loan-request-form" class="form-section">
+            <div class="input-section">
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div>
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+                <div>
+                    <label for="contact">Contact Number</label>
+                    <input type="tel" id="contact" name="contact" required>
+                </div>
+                <div>
+                    <label for="business">Business Name</label>
+                    <input type="text" id="business" name="business" required>
+                </div>
+                <div class="amount-container">
+                    <label for="amount">Request Amount in Rupees</label>
+                    <div class="input-group">
+                        <span class="input-symbol">₹</span>
+                        <input type="number" id="amount" name="amount" placeholder="Request Amount" required>
+                    </div>
+                </div>
             </div>
             <div class="upload-section">
                 <div>
@@ -199,11 +278,10 @@
                     <input type="file" id="passport-photo" name="passport-photo" accept="image/*" required>
                 </div>
             </div>
-            <div id="message" class="message"></div>
-            <button type="submit">Request Loan</button>
         </form>
-    </div>
-    
+        <div id="message" class="message"></div>
+        <button type="submit" form="loan-request-form">Submit Request</button>
+    </div>    
     <script>
         document.getElementById('loan-request-form').addEventListener('submit', async function(event) {
             event.preventDefault();  // Prevent the default form submission

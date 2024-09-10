@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beneficiary Profiles</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    position: absolute;
+    top: 10%;
+    bottom: 10%;
+    left: 10%;
+    right: 10%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px; /* rounded corners */
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.table-container {
+    flex: 1; /* Allow table-container to expand */
+    overflow-y: auto; /* Make table-container scrollable */
+    border: 1px solid #ddd; /* Outline */
+    border-radius: 10px; /* Rounded corners */
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: none; /* No internal lines */
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f0f0f0;
+    position: sticky; /* Make the heading sticky */
+    top: 0; /* Position the heading at the top */
+    border-bottom: 1px solid #ddd; /* Bottom border for heading */
+}
+
+tr {
+    border-bottom: 1px solid #ddd; /* Bottom border for each row */
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f2f2f2;
+}
+
+.profile-pic {
+    border-radius: 50%; /* Rounded edges */
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+}
+
+.missing-data {
+    color: red; /* Display missing data in red */
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Beneficiary Profiles</h1>
+    <div class="table-container">
+        <table id="beneficiary-profiles-table">
+            <thead>
+                <tr>
+                    <th>Serial No</th>
+                    <th>Profile Photo</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>DOB</th>
+                    <th>Aadhar No</th>
+                    <th>Bank Acc No</th>
+                </tr>
+            </thead>
+            <tbody id="beneficiary-profiles-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        type: 'GET',
+        url: '/api/beneficiary_profiles',
+        success: function(data) {
+            $.each(data, function(index, value) {
+                $('#beneficiary-profiles-tbody').append('<tr>' +
+                    '<td>' + (index + 1) + '</td>' +
+                    '<td><img src="' + (value.profilePicPath || '/path/to/default/profile-pic.jpg') + '" class="profile-pic" alt="Profile Picture"></td>' +
+                    '<td>' + (value.name || '<span class="missing-data">-</span>') + '</td>' +
+                    '<td>' + (value.email || '<span class="missing-data">-</span>') + '</td>' +
+                    '<td>' + (value.phone || '<span class="missing-data">-</span>') + '</td>' +
+                    '<td>' + (value.dob || '<span class="missing-data">-</span>') + '</td>' +
+                    '<td>' + (value.aadharno || '<span class="missing-data">-</span>') + '</td>' +
+                    '<td>' + (value.bankaccno || '<span class="missing-data">-</span>') + '</td>' +
+                    '</tr>');
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

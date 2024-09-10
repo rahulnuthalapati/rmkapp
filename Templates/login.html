@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='/Styles/style.css') }}">
+
     <style>
     /* General Reset */
         * {
@@ -11,6 +13,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
         
         /* Font */
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap');
@@ -34,6 +37,8 @@
             max-width: 400px;
             width: 100%;
             text-align: center;
+            background-color: rgba(255, 255, 255, 0.9); /* Add some transparency */
+            z-index: 1;
         }
         
         /* Heading */
@@ -159,7 +164,14 @@
                     });
                 } else {
                     return response.text().then(errorMessage => {
-                        document.getElementById('error-message').textContent = errorMessage || 'Login failed. Please try again.';
+                        if (errorMessage === "Please select role from homepage, redirecting in 3 seconds...") {
+                            document.getElementById('error-message').textContent = errorMessage;
+                            setTimeout(() => {
+                                window.location.href = "{{ url_for('home_page') }}"; // Replace 'home_page' with the actual route name
+                            }, 3000); // Redirect after 3 seconds
+                        } else {
+                            document.getElementById('error-message').textContent = errorMessage || 'Login failed. Please try again.';
+                        }
                     });
                 }
             })
