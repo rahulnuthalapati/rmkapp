@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loan Request Form</title>
     <style>
-                /* General Reset */
+        /* General Reset */
         * {
             margin: 0;
             padding: 0;
@@ -108,6 +108,33 @@
             object-fit: cover;
         }
 
+        .message {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 16px;
+            color: green; 
+            display: none;
+        }
+
+        /* Request Amount Styles */
+        .amount-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .amount-container span {
+            font-size: 16px;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        .amount-container input {
+            width: calc(100% - 40px); /* Adjust width to account for the icon */
+            padding-left: 30px; /* Space for the icon inside the input */
+        }
+
         /* Responsive Design */
         @media (max-width: 600px) {
             .container {
@@ -138,34 +165,41 @@
                 <label for="business">Type of Business:</label>
                 <input type="text" id="business" name="business" required>
             </div>
-    
+            <div class="amount-container">
+                <label for="amount">Enter Rupees </label>
+                <input type="number" id="amount" name="amount" placeholder="Request Amount" required>
+            </div>
             <div class="upload-section">
                 <div>
                     <label for="adhaar">
-                        <img src="adhaar-placeholder.png" alt="Adhaar">
+                        <img src="/static/images/webpages/image-upload.webp" alt="Adhaar">
                     </label>
+                    <p>Aadhaar Card</p>
                     <input type="file" id="adhaar" name="adhaar" accept="image/*" required>
                 </div>
                 <div>
                     <label for="pan">
-                        <img src="pan-placeholder.png" alt="PAN Card">
+                        <img src="/static/images/webpages/image-upload.webp" alt="PAN Card">
                     </label>
+                    <p>PAN Card</p>
                     <input type="file" id="pan" name="pan" accept="image/*" required>
                 </div>
                 <div>
                     <label for="passbook">
-                        <img src="passbook-placeholder.png" alt="Passbook">
+                        <img src="/static/images/webpages/image-upload.webp" alt="Passbook">
                     </label>
+                    <p>Passbook</p>
                     <input type="file" id="passbook" name="passbook" accept="image/*" required>
                 </div>
                 <div>
                     <label for="passport-photo">
-                        <img src="passport-photo-placeholder.png" alt="Passport Photo">
+                        <img src="/static/images/webpages/image-upload.webp" alt="Passport Photo">
                     </label>
+                    <p>Passport Photo</p>
                     <input type="file" id="passport-photo" name="passport-photo" accept="image/*" required>
                 </div>
             </div>
-    
+            <div id="message" class="message"></div>
             <button type="submit">Request Loan</button>
         </form>
     </div>
@@ -179,10 +213,11 @@
             formData.append('dob', document.getElementById('dob').value);
             formData.append('contact', document.getElementById('contact').value);
             formData.append('business', document.getElementById('business').value);
+            formData.append('amount', document.getElementById('amount').value);
             formData.append('adhaar', document.getElementById('adhaar').files[0]);
-            formData.append('pan', document.getElementById('pan').files[0]);
-            formData.append('passbook', document.getElementById('passbook').files[0]);
-            formData.append('passport_photo', document.getElementById('passport-photo').files[0]);
+            formData.append('pan', document.getElementById('pan').files[1]);
+            formData.append('passbook', document.getElementById('passbook').files[2]);
+            formData.append('passport', document.getElementById('passport-photo').files[3]);
     
             try {
                 const response = await fetch('/api/loanapplication', {
@@ -190,17 +225,30 @@
                     body: formData
                 });
     
+                const result = await response.json(); // Ensure to parse JSON response
+    
                 if (response.ok) {
                     // Success logic here
-                    alert('Loan application submitted successfully!');
+                    const messageDiv = document.getElementById('message');
+                    messageDiv.textContent = result.message;
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.color = 'green'; // Success message color
+    
+                    // Redirect after 5 seconds
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 5000);                
                 } else {
-                    // Handle errors here
-                    const errorData = await response.json();
-                    alert(`Error: ${errorData.message}`);
+                    const messageDiv = document.getElementById('message');
+                    messageDiv.textContent = `Error: ${result.message}`;
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.color = 'red'; // Error message color
                 }
             } catch (error) {
-                console.error('Error submitting loan application:', error);
-                alert('Failed to submit loan application.');
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = 'Error submitting loan application.';
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = 'red'; // Error message color
             }
         });
     
@@ -254,5 +302,5 @@
             }
         });
     </script>    
-    </body>
+</body>
 </html>

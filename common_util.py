@@ -51,13 +51,12 @@ def loan_application(request, cur, user_type, user_details):
     dob = request.form.get('dob')
     contact = request.form.get('contact')
     business = request.form.get('business')
-    adhaar = request.files.get('adhaar')
-    pan = request.files.get('pan')
-    passbook = request.files.get('passbook')
-    passport = request.files.get('passport')
-    email_id = user_details[2]
-    files = ['adhaar', 'pan', 'passbook', 'passport']
+    amount = request.form.get('amount')
+    email_id = user_details[1]
 
+    print(email_id, "is applying for a loan...")
+
+    files = ['adhaar', 'pan', 'passbook', 'passport']
     file_paths = {}
 
     for file in files:
@@ -71,10 +70,19 @@ def loan_application(request, cur, user_type, user_details):
             file_data.save(file_path)
             file_paths[file] = file_path
 
-        query = """ INSERT INTO user_loan (email, adhaar_path, pan_path, passbook_path, passport_path)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-        cur.execute(query, (email_id, file_paths['adhaar'], file_paths['pan'], file_paths['passbook'], file_paths['passport']))
+    # Ensure all paths are available; set missing paths to None
+    file_paths = {file: file_paths.get(file, None) for file in files}
 
-
+    query = """ 
+    INSERT INTO user_loan (email, aadhar_path, pan_path, passbook_path, passport_path, loan_amount)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    cur.execute(query, (
+        email_id,
+        file_paths.get('adhaar'),
+        file_paths.get('pan'),
+        file_paths.get('passbook'),
+        file_paths.get('passport'),
+        amount
+    ))
 

@@ -60,10 +60,10 @@ def checkdb(cursor):
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_loan (
         email VARCHAR(255),
-        aadhar_image_url VARCHAR(255),
-        pan_image_url VARCHAR(255),
-        passbook_image_url VARCHAR(255),
-        profile_image_url VARCHAR(255),
+        aadhar_path VARCHAR(255),
+        pan_path VARCHAR(255),
+        passbook_path VARCHAR(255),
+        passport_path VARCHAR(255),
         loan_amount BIGINT,
         FOREIGN KEY (email) REFERENCES users(email)
     )      

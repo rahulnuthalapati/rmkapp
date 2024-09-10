@@ -91,7 +91,7 @@ def loan_application_page():
 def loan_application():
     cu.loan_application(request, cursor, current_role, current_user)
     cnx.commit()
-    return "success", 200
+    return jsonify({'message': 'Loan application submitted, redirecting in 5 seconds...', 'redirect': '/beneficiary'}), 200
     
 
 @app.route('/profile_page')
