@@ -87,6 +87,13 @@ def organizer_page():
 def loan_application_page():
     return render_template('loan_application.html')
 
+@app.route('/api/loanapplication', methods=['POST'])
+def loan_application():
+    cu.loan_application(request, cursor, current_role, current_user)
+    cnx.commit()
+    return "success", 200
+    
+
 @app.route('/profile_page')
 def profile_page():
     return render_template('profile.html')

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Request Form</title>
+    <style>
+                /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap');
+
+        /* Global Styles */
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Change from center to flex-start */
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            margin-top: 20px; /* Space from the top */
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        /* Upload Section Styles */
+        .upload-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .upload-section div {
+            text-align: center;
+            flex: 1;
+        }
+
+        .upload-section label {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .upload-section label:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Request</h1>
+        <form id="loan-request-form">
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div>
+                <label for="dob">Date of Birth:</label>
+                <input type="date" id="dob" name="dob" required>
+            </div>
+            <div>
+                <label for="contact">Contact Number:</label>
+                <input type="tel" id="contact" name="contact" required>
+            </div>
+            <div>
+                <label for="business">Type of Business:</label>
+                <input type="text" id="business" name="business" required>
+            </div>
+    
+            <div class="upload-section">
+                <div>
+                    <label for="adhaar">
+                        <img src="adhaar-placeholder.png" alt="Adhaar">
+                    </label>
+                    <input type="file" id="adhaar" name="adhaar" accept="image/*" required>
+                </div>
+                <div>
+                    <label for="pan">
+                        <img src="pan-placeholder.png" alt="PAN Card">
+                    </label>
+                    <input type="file" id="pan" name="pan" accept="image/*" required>
+                </div>
+                <div>
+                    <label for="passbook">
+                        <img src="passbook-placeholder.png" alt="Passbook">
+                    </label>
+                    <input type="file" id="passbook" name="passbook" accept="image/*" required>
+                </div>
+                <div>
+                    <label for="passport-photo">
+                        <img src="passport-photo-placeholder.png" alt="Passport Photo">
+                    </label>
+                    <input type="file" id="passport-photo" name="passport-photo" accept="image/*" required>
+                </div>
+            </div>
+    
+            <button type="submit">Request Loan</button>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('loan-request-form').addEventListener('submit', async function(event) {
+            event.preventDefault();  // Prevent the default form submission
+    
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('dob', document.getElementById('dob').value);
+            formData.append('contact', document.getElementById('contact').value);
+            formData.append('business', document.getElementById('business').value);
+            formData.append('adhaar', document.getElementById('adhaar').files[0]);
+            formData.append('pan', document.getElementById('pan').files[0]);
+            formData.append('passbook', document.getElementById('passbook').files[0]);
+            formData.append('passport_photo', document.getElementById('passport-photo').files[0]);
+    
+            try {
+                const response = await fetch('/api/loanapplication', {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                if (response.ok) {
+                    // Success logic here
+                    alert('Loan application submitted successfully!');
+                } else {
+                    // Handle errors here
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message}`);
+                }
+            } catch (error) {
+                console.error('Error submitting loan application:', error);
+                alert('Failed to submit loan application.');
+            }
+        });
+    
+        // Same code for image preview after file selection as previous examples
+        const adhaarInput = document.getElementById('adhaar');
+        const panInput = document.getElementById('pan');
+        const passbookInput = document.getElementById('passbook');
+        const passportPhotoInput = document.getElementById('passport-photo');
+    
+        adhaarInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('label[for="adhaar"] img').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    
+        panInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('label[for="pan"] img').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    
+        passbookInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('label[for="passbook"] img').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    
+        passportPhotoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('label[for="passport-photo"] img').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>    
+    </body>
+</html>
