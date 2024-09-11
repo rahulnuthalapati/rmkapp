@@ -87,10 +87,19 @@ def loan_application(request, cur, user_type, user_details):
         amount
     ))
 
-
 def get_beneficiary_profiles(cur):
     cur.execute('SELECT * FROM users WHERE type = "beneficiary"')
     profiles = cur.fetchall()
     print(profiles)
     return profiles
+
+def get_current_beneficiary_details(cur):
+    from main import current_user
+    
+    user_email = current_user[1]
+    
+    query = """SELECT * FROM user_business WHERE user_email = %s"""
+    cur.execute(query, (user_email))
+    result = cur.fetchone()
+    return result
 

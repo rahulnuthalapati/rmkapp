@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Economic Activities</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='/Styles/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box; /* Ensure padding is included in width calculation */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            pointer-events: none; /* Initially non-editable */
+            box-sizing: border-box; /* Ensures padding doesn't cause overflow */
+        }
+
+        .input-group input.editable {
+            border: 1px solid #ccc; /* Add border when editable */
+            background-color: #fff;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px; /* Add space between buttons and input fields */
+        }
+
+        .button:hover {
+            background-color: #2c2c2c;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success, .error {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .columns {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .column {
+            flex: 1;
+            margin: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Manage Economic Activities</h1>
+
+        <form id="economicActivityForm">
+        <div class="columns">
+            <div class="column">
+            <div class="input-group">
+                <label for="name">Business Name</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div class="input-group">
+                <label for="address">Business Address</label>
+                <input type="text" id="address" name="address">
+            </div>
+            <div class="input-group">
+                <label for="type">Type of Business</label>
+                <input type="text" id="type" name="type">
+            </div>
+        </div>
+        <div class="column">
+            <div class="input-group">
+                <label for="monthlyRevenue">Monthly Revenue</label>
+                <input type="number" id="monthlyRevenue" name="monthlyRevenue">
+            </div>
+            <div class="input-group">
+                <label for="annualRevenue">Annual Revenue</label>
+                <input type="number" id="annualRevenue" name="annualRevenue">
+            </div>
+            <div class="input-group">
+                <label for="monthlyExpenses">Monthly Expenses</label>
+                <input type="number" id="monthlyExpenses" name="monthlyExpenses">
+            </div>
+            <div class="input-group">
+                <label for="annualExpenses">Annual Expenses</label>
+                <input type="number" id="annualExpenses" name="annualExpenses">
+            </div>
+            <div class="input-group">
+                <label for="profitMargin">Profit Margin (%)</label>
+                <input type="number" id="profitMargin" name="profitMargin">
+            </div>
+        </div>
+        </div>
+            <p id="success-message" class="success hidden"></p>
+            <p id="error-message" class="error hidden"></p>
+
+            <button type="button" id="editButton" class="button">Edit Economic Activities</button>
+            <button type="submit" id="saveButton" class="button hidden">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        function populateField(fieldId, data) {
+            const field = document.getElementById(fieldId);
+            if (data === null || data === '' || data === undefined) {
+                field.value = 'No Data';
+                field.style.color = 'red';
+            } else {
+                field.value = data;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/economic_activity')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('type').value = data.type;
+                    document.getElementById('name').value = data.name;
+                    document.getElementById('address').value = data.address;
+                    document.getElementById('monthlyRevenue').value = data.monthly_revenue;
+                    document.getElementById('annualRevenue').value = data.annual_revenue;
+                    document.getElementById('monthlyExpenses').value = data.monthly_expense;
+                    document.getElementById('annualExpenses').value = data.annual_expense;
+                    document.getElementById('profitMargin').value = data.profit_margin;
+                })
+                .catch(error => console.error('Error fetching economic activity data:', error));
+        });
+
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const formFields = document.querySelectorAll('input');
+
+        editButton.addEventListener('click', () => {
+            formFields.forEach(field => {
+                field.disabled = false;
+                field.style.pointerEvents = 'auto';
+                field.style.backgroundColor = '#fff';
+                field.classList.add('editable');
+            });
+            editButton.classList.add('hidden');
+            saveButton.classList.remove('hidden');
+        });
+
+        saveButton.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const businessData = {
+                type: document.getElementById('type').value,
+                name: document.getElementById('name').value,
+                address: document.getElementById('address').value,
+                monthly_revenue: document.getElementById('monthlyRevenue').value,
+                annual_revenue: document.getElementById('annualRevenue').value,
+                monthly_expense: document.getElementById('monthlyExpenses').value,
+                annual_expense: document.getElementById('annualExpenses').value,
+                profit_margin: document.getElementById('profitMargin').value
+            };
+
+            fetch('/api/economic_activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(businessData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    formFields.forEach(field => {
+                        field.disabled = true;
+                        field.style.pointerEvents = 'none';
+                        field.style.backgroundColor = '#f5f5f5';
+                        field.classList.remove('editable'); // Remove 'editable' class
+                    });
+                    editButton.classList.remove('hidden');
+                    saveButton.classList.add('hidden');
+                    document.getElementById('success-message').textContent = 'Economic activities updated successfully.';
+                    document.getElementById('success-message').classList.remove('hidden');
+                    document.getElementById('error-message').classList.add('hidden');
+                } else {
+                    document.getElementById('error-message').textContent = 'Failed to update economic activities.';
+                    document.getElementById('error-message').classList.remove('hidden');
+                    document.getElementById('success-message').classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating economic activities:', error);
+                document.getElementById('error-message').textContent = 'An error occurred while updating economic activities.';
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('success-message').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

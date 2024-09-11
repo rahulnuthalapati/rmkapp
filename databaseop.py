@@ -2,6 +2,8 @@ def checkdb(cursor):
     # cursor.execute("DROP DATABASE IF EXISTS rmkdb")
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
+    # cursor.execute("DROP TABLE IF EXISTS user_loan")
+
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
@@ -23,6 +25,7 @@ def checkdb(cursor):
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_business (
+        email VARCHAR(255),
         name VARCHAR(255),
         address VARCHAR(255),
         type VARCHAR(255),
@@ -31,7 +34,8 @@ def checkdb(cursor):
         monthly_expense BIGINT,
         annual_expense BIGINT,
         profit_margin INT,
-        PRIMARY KEY (name)
+        PRIMARY KEY (email),
+        FOREIGN KEY (email) REFERENCES users(email)
     )
     """)
     
@@ -65,6 +69,16 @@ def checkdb(cursor):
         passbook_path VARCHAR(255),
         passport_path VARCHAR(255),
         loan_amount BIGINT,
+        loan_status enum('approved', 'rejected', 'pending', 'disbursed'),
         FOREIGN KEY (email) REFERENCES users(email)
     )      
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS loan_payments (
+        email VARCHAR(255),
+        amount BIGINT,
+        date DATE,
+        FOREIGN KEY (email) REFERENCES users(email)
+    )
     """)
