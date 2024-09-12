@@ -1,145 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Information</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='/Styles/style.css') }}">
-    <style>
-        body {
-            font-family: 'Work Sans', sans-serif; /* Ensure consistency with other pages */
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #e9ecef; /* Light gray background for consistency */
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 8px; /* Slightly rounded corners */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for modern look */
-        }
-        h1, h2 {
-            color: #343a40; /* Darker color for headings */
-        }
-        .status {
-            font-size: 24px;
-            font-weight: 600; /* Semi-bold text for status */
-            margin: 20px 0;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .pending { background-color: #fff3cd; color: #856404; } /* Yellow for pending */
-        .approved { background-color: #d4edda; color: #155724; } /* Light green for approved */
-        .disbursed { background-color: #cce5ff; color: #004085; } /* Light blue for disbursed */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px; /* Increased padding for better readability */
-            border: 1px solid #dee2e6; /* Light border color */
-            text-align: left;
-        }
-        th {
-            background-color: #f8f9fa; /* Light gray for table headers */
-        }
-        .button {
-            display: inline-block;
-            background-color: #007bff; /* Primary blue color for buttons */
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            font-weight: 600; /* Bold text for buttons */
-            text-align: center;
-        }
-        .button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Information</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        position: absolute;
+        top: 10%;
+        bottom: 10%;
+        left: 10%;
+        right: 10%;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px; /* rounded corners */
+        display: flex;
+        flex-direction: column;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .table-container {
+        flex: 1; /* Allow table-container to expand */
+        overflow-y: auto; /* Make table-container scrollable */
+        border: 1px solid #ddd; /* Outline */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border: none; /* No internal lines */
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f0f0f0;
+        position: sticky; /* Make the heading sticky */
+        top: 0; /* Position the heading at the top */
+        border-bottom: 1px solid #ddd; /* Bottom border for heading */
+    }
+
+    tr {
+        border-bottom: 1px solid #ddd; /* Bottom border for each row */
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .profile-pic {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;  
+    }
+
+    .missing-data {
+        color: red; /* Display missing data in red */
+    }
+
+    .status-approved {
+        color: green;
+    }
+
+    .status-rejected {
+        color: red;
+    }    
+</style>
 </head>
 <body>
-    <div class="container" id="loanInfo">
-        <h1>Loan Information</h1>
-        <div id="content"></div>
+<div class="container">
+    <h1>Loan Information</h1>
+    <div class="table-container">
+        <table id="loan-information-table">
+            <thead>
+                <tr>
+                    <th>Loan ID</th> 
+                    <th>Loan Amount</th>
+                    <th>Loan Status</th>
+                    <th>Payment History</th> 
+                </tr>
+            </thead>
+            <tbody id="loan-information-tbody">
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <script>
-        function fetchLoanInformation() {
-            fetch('/api/loan_information')
-                .then(response => response.json())
-                .then(data => {
-                    const contentDiv = document.getElementById('content');
-                    if (!data.loan_exists) {
-                        contentDiv.innerHTML = `
-                            <p>No loan information found.</p>
-                            <a href="/apply_loan" class="button">Apply for a Loan</a>
-                        `;
-                    } else {
-                        let html = `
-                            <div class="status ${data.loan_info.loan_status}">
-                                Loan Status: ${data.loan_info.loan_status.toUpperCase()}
-                            </div>
-                            <h2>Loan Details</h2>
-                            <table>
-                                <tr>
-                                    <th>Loan Amount</th>
-                                    <td>${data.loan_info.loan_amount}</td>
-                                </tr>
-                                <tr>
-                                    <th>Aadhar Document</th>
-                                    <td>${data.loan_info.aadhar_path}</td>
-                                </tr>
-                                <tr>
-                                    <th>PAN Document</th>
-                                    <td>${data.loan_info.pan_path}</td>
-                                </tr>
-                                <tr>
-                                    <th>Passbook Document</th>
-                                    <td>${data.loan_info.passbook_path}</td>
-                                </tr>
-                                <tr>
-                                    <th>Passport Document</th>
-                                    <td>${data.loan_info.passport_path}</td>
-                                </tr>
-                            </table>
-                        `;
-
-                        if (data.loan_info.loan_status === 'disbursed') {
-                            html += `
-                                <h2>Amount Remaining: ${data.remaining_amount}</h2>
-                                <h2>Payment History</h2>
-                                <table>
-                                    <tr>
-                                        <th>Payment Date</th>
-                                        <th>Amount Paid</th>
-                                    </tr>
-                                    ${data.payment_history.map(payment => `
-                                        <tr>
-                                            <td>${payment.payment_date}</td>
-                                            <td>${payment.amount_paid}</td>
-                                        </tr>
-                                    `).join('')}
-                                </table>
-                            `;
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/loan_information')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.loan_exists) {
+                    const tbody = document.getElementById('loan-information-tbody');
+                    data.loans.forEach(loan => {
+                        let statusClass = '';
+                        if (loan.loan_status === 'approved') {
+                            statusClass = 'status-approved';
+                        } else if (loan.loan_status === 'rejected') {
+                            statusClass = 'status-rejected';
                         }
-
-                        contentDiv.innerHTML = html;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('content').innerHTML = '<p>Error fetching loan information. Please try again later.</p>';
-                });
-        }
-
-        // Fetch loan information when the page loads
-        window.onload = fetchLoanInformation;
-    </script>
+                        let paymentHistoryCell = '<td>No Payment History</td>';
+                        if (loan.payment_exist) {
+                            paymentHistoryCell = `
+                                <td>
+                                    <a href="/loan_payment_page?loanId=${loan.loan_id}">
+                                        <i class="fas fa-arrow-right"></i> 
+                                    </a>
+                                </td>`;
+                        }
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${loan.loan_id}</td> 
+                            <td>₹ ${loan.loan_amount}</td>
+                            <td class="${statusClass}">${loan.loan_status}</td>
+                            ${paymentHistoryCell}
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    // Handle case where no loan exists (e.g., display a message)
+                    const tableContainer = document.querySelector('.table-container');
+                    tableContainer.innerHTML = '<p>No loan information found.</p>'; 
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching loan information:', error);
+                // ... (Error handling) ...
+            });
+    });
+</script>
 </body>
 </html>
