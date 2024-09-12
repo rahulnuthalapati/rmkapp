@@ -53,6 +53,7 @@ def loan_application(request, cur, user_type, user_details):
     contact = request.form.get('contact')
     business = request.form.get('business')
     amount = request.form.get('amount')
+    loan_status = "pending"
     email_id = user_details[1]
 
     print(email_id, "is applying for a loan...")
@@ -75,8 +76,8 @@ def loan_application(request, cur, user_type, user_details):
     file_paths = {file: file_paths.get(file, None) for file in files}
 
     query = """ 
-    INSERT INTO user_loan (email, aadhar_path, pan_path, passbook_path, passport_path, loan_amount)
-    VALUES (%s, %s, %s, %s, %s, %s)
+    INSERT INTO user_loan (email, aadhar_path, pan_path, passbook_path, passport_path, loan_amount, loan_status)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
     cur.execute(query, (
         email_id,
@@ -84,7 +85,8 @@ def loan_application(request, cur, user_type, user_details):
         file_paths.get('pan'),
         file_paths.get('passbook'),
         file_paths.get('passport'),
-        amount
+        amount,
+        loan_status
     ))
 
 def get_beneficiary_profiles(cur):

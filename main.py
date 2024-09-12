@@ -110,7 +110,7 @@ def loan_application_page():
 def loan_application():
     cu.loan_application(request, cursor, current_role, current_user)
     cnx.commit()
-    return jsonify({'message': 'Loan application submitted, redirecting in 5 seconds...', 'redirect': '/beneficiary'}), 200
+    return jsonify({'message': 'Loan application submitted, redirecting in 3 seconds...', 'redirect': '/beneficiary'}), 200
     
 
 @app.route('/profile_page')
@@ -193,7 +193,7 @@ def update_profile():
 def loan_information_page():
     return render_template('loan_information.html')
 
-@app.route('/api/loan_information')
+@app.route('/api/loan_information', methods=['GET'])
 def api_loan_information():
     global current_user
     if current_user is None:
@@ -205,41 +205,86 @@ def api_loan_information():
         WHERE email = %s
         """
         cursor.execute(query, (email,))
-        loan_info = cursor.fetchone()
-        print(loan_info)
+        loan_infos = cursor.fetchall()
+        print(loan_infos)
 
-        if loan_info is None:
+        if not loan_infos:
             return jsonify({"loan_exists": False})
 
-        if loan_info[6] == 'disbursed':
-            query = """
-            SELECT payment_date, amount_paid
-            FROM loan_payments
-            WHERE email = %s
-            ORDER BY payment_date DESC
+        loan_data = []
+        for loan_info in loan_infos:
+            loan_id = loan_info[0]
+
+            # Check if payments exist for this loan_id
+            payment_query = """
+            SELECT 1 FROM loan_payments WHERE loan_id = %s LIMIT 1
             """
-            cursor.execute(query, (email,))
-            payment_history = cursor.fetchall()
-
-            # Calculate remaining amount
-            total_paid = sum(payment[1] for payment in payment_history)
-            remaining_amount = loan_info[3] - total_paid
-
-            return jsonify({
+            cursor.execute(payment_query, (loan_id,))
+            payment_exists = bool(cursor.fetchone())
+        
+            loan_data.append({
+                 "loan_id": loan_info[0],                  # Assuming loan_id is the first column
+                 "loan_amount": loan_info[6],
+                 "loan_status": loan_info[7],
+                 "payment_exists": payment_exists})
+        print(loan_data)
+        return jsonify({
                 "loan_exists": True,
-                "loan_info": loan_info,
-                "payment_history": payment_history,
-                "remaining_amount": remaining_amount
-            })
-        else:
-            return jsonify({
-                "loan_exists": True,
-                "loan_info": loan_info
+                "loans": loan_data
             })
 
     except Exception as e:
         print(f"Error fetching loan information: {e}")
         return jsonify({"error": "Error fetching loan information"}), 500
+    
+@app.route('/api/record_payment', methods=['POST'])
+def record_payment():
+    try:
+        data = request.get_json()
+        loan_id = data.get('loan_id')
+        email = data.get('email')
+        amount = data.get('amount')
+        payment_date = data.get('payment_date')
+
+        if not all([loan_id, email, amount, payment_date]):
+            return jsonify({'error': 'Missing required data'}), 400
+
+        query = """
+        INSERT INTO loan_payments (loan_id, email, amount, payment_date)
+        VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(query, (loan_id, email, amount, payment_date))
+        cnx.commit()
+        return jsonify({'message': 'Payment recorded successfully'}), 200
+    except Exception as e:
+        print(f"Error recording payment: {e}")
+        cnx.rollback()
+        return jsonify({'error': 'Error recording payment'}), 500
+
+
+@app.route('/api/get_loan_payments', methods=['GET'])
+def get_loan_payments():
+    try:
+        loan_id = request.args.get('loan_id')
+        if not loan_id:
+            return jsonify({'error': 'Loan ID is required'}), 400
+        query = """
+        SELECT * FROM loan_payments
+        WHERE loan_id = %s
+        """
+        cursor.execute(query, (loan_id,))
+        payments = cursor.fetchall()
+        payment_data = []
+        for payment in payments:
+            payment_data.append({
+                "payment_id": payment[0],
+                "amount": payment[3],
+                "payment_date": payment[4].strftime('%Y-%m-%d') if payment[4] else None 
+            })
+        return jsonify(payment_data), 200
+    except Exception as e:
+        print(f"Error fetching loan payments: {e}")
+        return jsonify({'error': 'Error fetching loan payments'}), 500    
 
 @app.route('/economic_activities')
 def economic_activities_page():

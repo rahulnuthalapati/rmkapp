@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Payment History</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        position: absolute;
+        top: 10%;
+        bottom: 10%;
+        left: 10%;
+        right: 10%;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px; /* rounded corners */
+        display: flex;
+        flex-direction: column;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .table-container {
+        flex: 1; /* Allow table-container to expand */
+        overflow-y: auto; /* Make table-container scrollable */
+        border: 1px solid #ddd; /* Outline */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border: none; /* No internal lines */
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f0f0f0;
+        position: sticky; /* Make the heading sticky */
+        top: 0; /* Position the heading at the top */
+        border-bottom: 1px solid #ddd; /* Bottom border for heading */
+    }
+
+    tr {
+        border-bottom: 1px solid #ddd; /* Bottom border for each row */
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .profile-pic {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;  
+    }
+
+    .missing-data {
+        color: red; /* Display missing data in red */
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Loan Payment History</h1>
+    <div class="table-container">
+        <table id="loan-payment-table">
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Amount</th>
+                    <th>Payment Date</th>
+                </tr>
+            </thead>
+            <tbody id="loan-payment-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+ function fetchPaymentHistory(loanId) {
+        fetch(`/api/get_loan_payments?loan_id=${loanId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(payments => {
+                const tbody = document.getElementById('loan-payment-tbody');
+                if (payments.length === 0) {
+                    // Handle case where no payments exist for this loan
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="3">No payment history found for this loan.</td>';
+                    tbody.appendChild(row);
+                } else {
+                    payments.forEach(payment => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${payment.payment_id}</td>
+                            <td>${payment.amount}</td>
+                            <td>${payment.payment_date}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching payment history:', error);
+                const tableContainer = document.querySelector('.table-container');
+                tableContainer.innerHTML = '<p>Error fetching payment history. Please try again later.</p>';
+            });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const loanId = urlParams.get('loanId');
+
+    if (loanId) {
+        fetchPaymentHistory(loanId);
+    } else {
+        const tableContainer = document.querySelector('.table-container');
+        tableContainer.innerHTML = '<p>Loan ID is missing.</p>';
+    }
+</script>
+</body>
+</html>
