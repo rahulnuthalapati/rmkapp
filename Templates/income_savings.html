@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income and Savings</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='/Styles/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px; /* Adjusted for two grids */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        .input-group input.editable {
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #2c2c2c;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success, .error {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .columns {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .column {
+            flex: 1;
+            margin: 10px; /* Reduced margin for better spacing */
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Income and Savings</h1>
+
+        <form id="incomeSavingsForm">
+            <div class="columns">
+                <div class="column">
+                    <h2>Income Details</h2>
+                    <div class="input-group">
+                        <label for="monthlyIncome">Monthly Income</label>
+                        <input type="number" id="monthlyIncome" name="monthlyIncome">
+                    </div>
+                    <div class="input-group">
+                        <label for="annualIncome">Annual Income</label>
+                        <input type="number" id="annualIncome" name="annualIncome">
+                    </div>
+                    <div class="input-group">
+                        <label for="sourcesIncome">Sources of Income</label>
+                        <input type="text" id="sourcesIncome" name="sourcesIncome">
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h2>Savings Details</h2>
+                    <div class="input-group">
+                        <label for="savingsAccNo">Savings Account Number</label>
+                        <input type="text" id="savingsAccNo" name="savingsAccNo">
+                    </div>
+                    <div class="input-group">
+                        <label for="currentSavings">Current Savings Balance</label>
+                        <input type="number" id="currentSavings" name="currentSavings">
+                    </div>
+                    <div class="input-group">
+                        <label for="monthlySavings">Monthly Savings Contributions</label>
+                        <input type="number" id="monthlySavings" name="monthlySavings">
+                    </div>
+                </div>
+            </div>
+            <p id="success-message" class="success hidden"></p>
+            <p id="error-message" class="error hidden"></p>
+
+            <button type="button" id="editButton" class="button">Edit Income & Savings</button>
+            <button type="submit" id="saveButton" class="button hidden">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/income_savings') // Fetch initial data
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) { // Check for success flag
+                        document.getElementById('monthlyIncome').value = data.monthly_income || '0';
+                        document.getElementById('annualIncome').value = data.annual_income || '0';
+                        document.getElementById('sourcesIncome').value = data.sources || '0';
+                        document.getElementById('savingsAccNo').value = data.savings_acc_details || '0';
+                        document.getElementById('currentSavings').value = data.savings_balance || '0';
+                        document.getElementById('monthlySavings').value = data.monthly_savings_contributions || '0';
+                    } else {
+                        console.error('Error fetching income and savings data:', data.error);
+                        // Handle error appropriately, maybe show an error message
+                    }
+                })
+                .catch(error => console.error('Error fetching income and savings data:', error));
+        });
+
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const formFields = document.querySelectorAll('input');
+
+        editButton.addEventListener('click', () => {
+            formFields.forEach(field => {
+                field.disabled = false;
+                field.style.pointerEvents = 'auto';
+                field.style.backgroundColor = '#fff';
+                field.classList.add('editable');
+                if (field.value === 'No data') { 
+                    field.value = ''; 
+                    field.classList.remove('error');
+                }
+            });
+            editButton.classList.add('hidden');
+            saveButton.classList.remove('hidden');
+        });
+
+        saveButton.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const incomeSavingsData = {
+                monthly_income: document.getElementById('monthlyIncome').value,
+                annual_income: document.getElementById('annualIncome').value,
+                sources: document.getElementById('sourcesIncome').value,
+                savings_acc_details: document.getElementById('savingsAccNo').value,
+                savings_balance: document.getElementById('currentSavings').value,
+                monthly_savings_contributions: document.getElementById('monthlySavings').value,
+            };
+
+            fetch('/api/income_savings', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(incomeSavingsData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Handle success
+                    formFields.forEach(field => {
+                        field.disabled = true;
+                        field.style.pointerEvents = 'none';
+                        field.style.backgroundColor = '#f5f5f5';
+                        field.classList.remove('editable');
+                    });
+                    editButton.classList.remove('hidden');
+                    saveButton.classList.add('hidden');
+
+                    // Display success message
+                    document.getElementById('success-message').textContent = data.message || 'Income and savings data saved successfully.';
+                    document.getElementById('success-message').classList.remove('hidden');
+                    document.getElementById('error-message').classList.add('hidden'); 
+                } 
+                else {
+                    document.getElementById('error-message').textContent = data.error || 'Failed to save income and savings data.';
+                    document.getElementById('error-message').classList.remove('hidden');
+                    document.getElementById('success-message').classList.add('hidden');                }
+            })
+            .catch(error => {
+                console.error('Error saving income and savings data:', error);
+                document.getElementById('error-message').textContent = 'An error occurred while saving data. Please try again later.';
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('success-message').classList.add('hidden');             });
+        });
+    </script>
+</body>
+</html>

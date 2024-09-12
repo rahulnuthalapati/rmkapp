@@ -170,14 +170,30 @@
             fetch('/api/economic_activity')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('type').value = data.type;
-                    document.getElementById('name').value = data.name;
-                    document.getElementById('address').value = data.address;
-                    document.getElementById('monthlyRevenue').value = data.monthly_revenue;
-                    document.getElementById('annualRevenue').value = data.annual_revenue;
-                    document.getElementById('monthlyExpenses').value = data.monthly_expense;
-                    document.getElementById('annualExpenses').value = data.annual_expense;
-                    document.getElementById('profitMargin').value = data.profit_margin;
+                    document.getElementById('type').value = data.type || 'No data';
+                    document.getElementById('type').classList.toggle('error', !data.type);
+
+                    document.getElementById('name').value = data.name || 'No data';
+                    document.getElementById('name').classList.toggle('error', !data.name);
+
+                    document.getElementById('address').value = data.address || 'No data';
+                    document.getElementById('address').classList.toggle('error', !data.address);
+
+                    document.getElementById('monthlyRevenue').value = data.monthly_revenue || '0';
+                    document.getElementById('monthlyRevenue').classList.toggle('error', !data.monthly_revenue);
+
+                    document.getElementById('annualRevenue').value = data.annual_revenue || '0';
+                    document.getElementById('annualRevenue').classList.toggle('error', !data.annual_revenue);
+
+                    document.getElementById('monthlyExpenses').value = data.monthly_expense || '0';
+                    document.getElementById('monthlyExpenses').classList.toggle('error', !data.monthly_expense);
+
+                    document.getElementById('annualExpenses').value = data.annual_expense || '0';
+                    document.getElementById('annualExpenses').classList.toggle('error', !data.annual_expense);
+
+                    document.getElementById('profitMargin').value = data.profit_margin || '0';
+                    document.getElementById('profitMargin').classList.toggle('error', !data.profit_margin);
+
                 })
                 .catch(error => console.error('Error fetching economic activity data:', error));
         });
@@ -192,6 +208,10 @@
                 field.style.pointerEvents = 'auto';
                 field.style.backgroundColor = '#fff';
                 field.classList.add('editable');
+                if (field.value === 'No data') { 
+                    field.value = ''; 
+                    field.classList.remove('error');
+                }
             });
             editButton.classList.add('hidden');
             saveButton.classList.remove('hidden');

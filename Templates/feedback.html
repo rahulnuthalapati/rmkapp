@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback and Surveys</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            position: absolute;
+            top: 10%;
+            bottom: 10%;
+            left: 10%;
+            right: 10%;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px; /* rounded corners */
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            flex: 1; /* Allow table-container to expand */
+            overflow-y: auto; /* Make table-container scrollable */
+            border: 1px solid #ddd; /* Outline */
+            border-radius: 10px; /* Rounded corners */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            border: none; /* No internal lines */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            position: sticky; /* Make the heading sticky */
+            top: 0; /* Position the heading at the top */
+            border-bottom: 1px solid #ddd; /* Bottom border for heading */
+        }
+
+        tr {
+            border-bottom: 1px solid #ddd; /* Bottom border for each row */
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;  
+        }
+
+        .missing-data {
+            color: red; /* Display missing data in red */
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px; /* Add space between buttons and input fields */
+        }
+    
+        .header { /* Modified to include the new feedback button */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .new-feedback-button {
+            padding: 8px 16px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .new-feedback-button:hover {
+            background-color: #2c2c2c;
+        }
+
+        /* Styles for the feedback popup */
+        .feedback-popup {
+            position: fixed; 
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10; /* Ensure it's on top of other content */
+            display: none;  /* Hidden by default */
+            max-width: 90%;  /* Make sure it doesn't overflow */
+        }
+
+        .feedback-popup h3 {
+            margin-top: 0;
+            text-align: center; /* Center the heading */
+        }
+
+        .feedback-popup .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+        #feedback-table tbody td:nth-child(3) { /* Target table cells in the body */
+            cursor: pointer; /* Indicate that it's clickable */
+            color: rgb(24, 163, 255);  /* Set the text color to blue */
+        }
+
+        #feedback-table tbody td:nth-child(3):hover { /* Add underline on hover */
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Feedback and Surveys</h1>
+            <button class="new-feedback-button" onclick="openNewFeedbackForm()">New Feedback</button>
+        </div>
+        <div class="table-container">
+            <table id="feedback-table">
+                <thead>
+                    <tr>
+                        <th>Feedback ID</th> 
+                        <th>Date</th>
+                        <th>Summary</th> 
+                    </tr>
+                </thead>
+                <tbody id="feedback-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Feedback Popup -->
+    <div class="feedback-popup" id="feedbackPopup">
+        <span class="close-button" onclick="closeFeedbackPopup()">×</span>
+        <h3>Feedback Details</h3>
+        <p id="feedbackContent"></p>
+    </div>
+
+    <!-- New Feedback Form (Initially Hidden) -->
+    <div class="feedback-popup" id="newFeedbackForm">
+        <span class="close-button" onclick="closeNewFeedbackForm()">×</span>
+        <h3>Submit New Feedback</h3>
+        <textarea id="feedbackText" rows="12" cols="30" placeholder="Enter your feedback here"></textarea>
+        <br>
+        <button class="button" onclick="submitFeedback()">Submit</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchFeedback();
+        });
+
+        function fetchFeedback() {
+            fetch('/api/feedback')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('feedback-tbody');
+                    tbody.innerHTML = ''; // Clear existing rows
+
+                    if (data.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td colspan="3">No feedback found.</td>';
+                        tbody.appendChild(row);
+                    } else {
+                        data.forEach(feedback => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${feedback.feedback_id}</td>
+                                <td>${feedback.feedback_date}</td>
+                                <td onclick="openFeedbackPopup('${feedback.feedback_text}', '${feedback.feedback_date}')">${feedback.feedback_summary}</td> 
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching feedback:', error));
+        }
+
+        function openFeedbackPopup(feedbackText, feedbackDate) { 
+            document.getElementById('feedbackPopup').innerHTML = ` 
+                <span class="close-button" onclick="closeFeedbackPopup()">×</span>
+                <h3>Feedback Details</h3>
+                <p id="feedbackContent">Feedback: ${feedbackText}</p>
+                <p>Date: ${feedbackDate}</p>
+            `;
+            document.getElementById('feedbackPopup').style.display = 'block';
+        }
+
+        function closeFeedbackPopup() {
+            document.getElementById('feedbackPopup').style.display = 'none';
+        }
+
+        function openNewFeedbackForm() {
+            document.getElementById('newFeedbackForm').style.display = 'block';
+        }
+
+        function closeNewFeedbackForm() {
+            document.getElementById('newFeedbackForm').style.display = 'none';
+        }
+
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackText').value;
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feedback_text: feedbackText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeNewFeedbackForm();
+                    fetchFeedback(data.feedback_id, data.feedback_date, feedbackText); 
+                    // You can display a success message here if needed.
+                } else {
+                    // Handle errors (e.g., display an error message)
+                    console.error('Error submitting feedback:', data.error);
+                }
+            })
+            .catch(error => console.error('Error submitting feedback:', error));
+        }
+
+    </script>
+</body>
+</html>
