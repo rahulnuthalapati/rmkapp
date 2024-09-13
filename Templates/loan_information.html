@@ -87,6 +87,13 @@
     .status-rejected {
         color: red;
     }    
+        
+    .no-loan-message {  /* New CSS class for the message */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; /* Center the text within the message */
+    }
 </style>
 </head>
 <body>
@@ -144,7 +151,7 @@
                 } else {
                     // Handle case where no loan exists (e.g., display a message)
                     const tableContainer = document.querySelector('.table-container');
-                    tableContainer.innerHTML = '<p>No loan information found.</p>'; 
+                    tableContainer.innerHTML = '<p class="no-loan-message">No loan information found.</p>';  
                 }
             })
             .catch(error => {

@@ -396,9 +396,135 @@ def manage_economic_activity():
 def income_savings_page():
     return render_template('income_savings.html')
 
+@app.route('/api/income_savings', methods=['GET', 'POST'])
+def income_savings():
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+    
+    email = current_user[1]
+    if request.method == 'GET':
+        try:
+            cursor.execute("SELECT * FROM user_income_savings WHERE email = %s", (email,))
+            data = cursor.fetchone()
+            
+            if data:
+                return jsonify({
+                    'success': True,
+                    'monthly_income': data[1], 
+                    'annual_income': data[2], 
+                    'sources': data[3], 
+                    'savings_balance': data[4], 
+                    'savings_acc_details': data[5], 
+                    'monthly_savings_contributions': data[6]
+                })
+            else:
+                return jsonify({'success': True})  
+
+        except Exception as e:
+            print(f"Error fetching income and savings data: {e}")
+            return jsonify({'success': False, 'error': 'Error fetching data'}), 500
+
+    elif request.method == 'POST':
+        try:
+            data = request.get_json()
+
+            # Check if data exists, if not, insert, otherwise update
+            cursor.execute("SELECT 1 FROM user_income_savings WHERE email = %s", (email,))
+            exists = cursor.fetchone()
+
+            if exists:
+                # Update existing data
+                update_query = """
+                UPDATE user_income_savings SET 
+                    monthly_income = %s,
+                    annual_income = %s,
+                    sources = %s,
+                    savings_balance = %s,
+                    savings_acc_details = %s,
+                    monthly_savings_contributions = %s
+                WHERE email = %s
+                """
+                cursor.execute(update_query, (
+                    data['monthly_income'], data['annual_income'], data['sources'], 
+                    data['savings_balance'], data['savings_acc_details'], 
+                    data['monthly_savings_contributions'], email
+                ))
+            else:
+                # Insert new data
+                insert_query = """
+                INSERT INTO user_income_savings (
+                    email, monthly_income, annual_income, sources, savings_balance, 
+                    savings_acc_details, monthly_savings_contributions
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_query, (
+                    email, data['monthly_income'], data['annual_income'], data['sources'], 
+                    data['savings_balance'], data['savings_acc_details'], 
+                    data['monthly_savings_contributions']
+                ))
+            
+            cnx.commit()
+            return jsonify({'success': True, 'message': 'Income and savings data saved successfully'}), 200
+
+        except Exception as e:
+            print(f"Error saving income and savings data: {e}")
+            cnx.rollback()
+            return jsonify({'success': False, 'error': 'Error saving data'}), 500
+
 @app.route('/feedback_page')
 def feedback_page():
     return render_template('feedback.html')
+
+@app.route('/api/feedback', methods=['GET', 'POST'])
+def api_feedback():
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+    
+    email = current_user[1]
+
+    if request.method == 'GET':
+            try:
+                cursor.execute("SELECT feedback_id, feedback_date, feedback_text FROM feedback WHERE email = %s", (email,)) 
+                feedbacks = cursor.fetchall()
+                feedback_data = []
+                for feedback in feedbacks:
+                    feedback_data.append({
+                        "feedback_id": feedback[0],
+                        "feedback_date": feedback[1].strftime('%Y-%m-%d') if feedback[1] else None,  # Format the date
+                        "feedback_text": feedback[2],
+                        "feedback_summary": feedback[2][:50] + "..." if len(feedback[2]) > 50 else feedback[2]
+                    })
+                return jsonify(feedback_data), 200
+
+            except Exception as e:
+                print(f"Error fetching feedback: {e}")
+                return jsonify({'error': 'Error fetching feedback'}), 500
+
+    elif request.method == 'POST':
+        try:
+            data = request.get_json()
+            feedback_text = data.get('feedback_text')
+
+            if not feedback_text:
+                return jsonify({'error': 'Feedback text is required'}), 400
+
+            # Get current date
+            current_date = datetime.now().strftime('%Y-%m-%d')  
+
+            cursor.execute("""
+            INSERT INTO feedback (email, feedback_date, feedback_text) VALUES (%s, %s, %s)
+            """, (email, current_date, feedback_text)) 
+            cnx.commit()
+
+            return jsonify({'success': True, 'message': 'Feedback submitted successfully'}), 200
+
+        except Exception as e:
+            print(f"Error submitting feedback: {e}")
+            cnx.rollback()
+            return jsonify({'error': 'Error submitting feedback'}), 500
+        
 
 @app.route('/notifications_page')
 def notifications_page():
