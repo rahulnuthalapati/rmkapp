@@ -7,7 +7,7 @@ import os
 import json
 from werkzeug.utils import secure_filename
 
-cnx = mysql.connector.connect(user='root', password='1234')
+cnx = mysql.connector.connect(user='root', password='')
 
 cursor = cnx.cursor()
 dbop.checkdb(cursor)
@@ -233,6 +233,10 @@ def update_profile():
 @app.route('/loan_information_page')
 def loan_information_page():
     return render_template('loan_information.html')
+
+@app.route('/loan_payment_page')
+def loan_payment_page():
+    return render_template('loan_payments.html')
 
 @app.route('/api/loan_information', methods=['GET'])
 def api_loan_information():

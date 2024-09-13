@@ -2,11 +2,7 @@ def checkdb(cursor):
     cursor.execute("DROP DATABASE IF EXISTS rmkdb")
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
-<<<<<<< Updated upstream
-    # cursor.execute("DROP TABLE IF EXISTS feedback")
-=======
     # cursor.execute("DROP TABLE IF EXISTS loan_payments")
->>>>>>> Stashed changes
 
     
     cursor.execute("""
