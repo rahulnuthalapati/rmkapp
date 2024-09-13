@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Requests</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .loan-request {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .loan-request:hover {
+            background-color: #f9f9f9;
+        }
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 20px;
+            object-fit: cover;
+        }
+        .loan-info {
+            flex-grow: 1;
+        }
+        .loan-info strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .loan-info span {
+            color: #666;
+            font-size: 14px;
+        }
+        .status-icon {
+            font-size: 20px;
+            margin-left: auto;
+        }
+        .loading-spinner {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading-spinner i {
+            font-size: 30px;
+            color: #007bff;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the tooltip */
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Loan Requests</h1>
+    <div id="loan-requests-container">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i> Loading loan requests...
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        type: 'GET',
+        url: '/api/user_loan',
+        success: function(data) {
+            $('.loading-spinner').hide(); // Hide the loading spinner
+            if (!data || data.length === 0) {
+                $('#loan-requests-container').append(
+                    '<div class="no-loan-message">No loan requests are available currently!</div>'
+                );
+            } else {
+                $.each(data, function(index, value) {
+                    const statusIcon = getStatusIcon(value.loan_status);
+                    $('#loan-requests-container').append(
+                        '<div class="loan-request" onclick="redirectToLoanDetails(\'' + value.email + '\')">' +
+                            '<img src="' + (value.profilePicPath || '/static/images/webpages/blank_profile.webp') + '" class="profile-pic" alt="Profile Picture">' +
+                            '<div class="loan-info">' +
+                                '<strong>' + value.email + '</strong>' +
+                                '<span>Loan Amount: ₹' + value.loan_amount + '</span>' +
+                            '</div>' +
+                            '<div class="tooltip status-icon">' + statusIcon +
+                                '<span class="tooltiptext">' + value.loan_status + '</span>' +
+                            '</div>' +
+                        '</div>'
+                    );
+                });
+            }
+        },
+        error: function() {
+            $('.loading-spinner').hide();
+            $('#loan-requests-container').append(
+                '<div class="error-message">Error loading loan requests. Please try again later.</div>'
+            );
+        }
+    });
+});
+
+// Function to get the appropriate status icon
+function getStatusIcon(status) {
+    switch (status) {
+        case 'approved':
+            return '<i class="fas fa-check-circle" style="color: green;"></i>';
+        case 'rejected':
+            return '<i class="fas fa-times-circle" style="color: red;"></i>';
+        case 'pending':
+            return '<i class="fas fa-clock" style="color: orange;"></i>';
+        case 'disbursed':
+            return '<i class="fas fa-money-bill-wave" style="color: blue;"></i>';
+        case 'verified':
+            return '<i class="fas fa-thumbs-up" style="color: purple;"></i>';
+        default:
+            return '<i class="fas fa-question-circle" style="color: gray;"></i>'; // Default icon for unknown status
+    }
+}
+
+// Redirect to loan details page
+function redirectToLoanDetails(email) {
+    window.location.href = '/loan_details_page?email=' + encodeURIComponent(email);
+}
+</script>
+</body>
+</html>

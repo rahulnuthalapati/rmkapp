@@ -36,7 +36,8 @@ def do_login(request_object, cur, user_type):
         return False 
     
     cur.execute(query, (email, password, user_type))
-    
+    print(cur.fetchone())
+
     if cur.fetchone() is not None:
         return True
     else:

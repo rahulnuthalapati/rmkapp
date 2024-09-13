@@ -7,7 +7,7 @@ import os
 import json
 from werkzeug.utils import secure_filename
 
-cnx = mysql.connector.connect(user='root', password='')
+cnx = mysql.connector.connect(user='root', password='1234')
 
 cursor = cnx.cursor()
 dbop.checkdb(cursor)
@@ -111,7 +111,48 @@ def loan_application():
     cu.loan_application(request, cursor, current_role, current_user)
     cnx.commit()
     return jsonify({'message': 'Loan application submitted, redirecting in 3 seconds...', 'redirect': '/beneficiary'}), 200
-    
+
+
+@app.route('/api/user_loan', methods=['GET'])
+def get_user_loan_requests():
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'No current user'}), 400
+    email = current_user[1]
+    try:
+        # Fetch loan requests for the current user
+        # Assuming current_user[1] contains the email
+        query = """
+        SELECT * FROM user_loan WHERE email = %s
+        """
+        cursor.execute(query, (email,))
+        result = cursor.fetchall()
+
+        if not result:
+            return jsonify({"loan_requests_exists": False})
+
+        loan_requests = []
+        for row in result:
+            loan_requests.append({
+                'email': row[1],
+                'loan_amount': row[6],
+                'loan_status': row[7],
+                'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  # Default image if path is None
+            })
+
+        print(jsonify({
+            "loan_requests_exists": True,
+            "loans": loan_requests
+        }))
+
+        return jsonify({
+            "loan_requests_exists": True,
+            "loans": loan_requests
+        })
+
+    except Exception as e:
+        print(f"Error fetching user loan requests: {e}")
+        return jsonify({"error": "Error fetching user loan requests"}), 500
 
 @app.route('/profile_page')
 def profile_page():
@@ -343,11 +384,11 @@ def manage_economic_activity():
                 ))
 
             cnx.commit()
-            return jsonify({'success': True})
+            return jsonify({'success': True}), 200
 
         except Exception as e:
             cnx.rollback()
-            return jsonify({'success': False, 'error': str(e)})
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     if request.method == 'GET':
         # Fetch business details from the `user_business` table

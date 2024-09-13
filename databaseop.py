@@ -1,8 +1,12 @@
 def checkdb(cursor):
-    # cursor.execute("DROP DATABASE IF EXISTS rmkdb")
+    cursor.execute("DROP DATABASE IF EXISTS rmkdb")
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
+<<<<<<< Updated upstream
     # cursor.execute("DROP TABLE IF EXISTS feedback")
+=======
+    # cursor.execute("DROP TABLE IF EXISTS loan_payments")
+>>>>>>> Stashed changes
 
     
     cursor.execute("""
@@ -18,6 +22,7 @@ def checkdb(cursor):
         bank VARCHAR(255),
         profile_pic VARCHAR(255),
         PRIMARY KEY (email, type),
+        UNIQUE (email),
         UNIQUE (aadharno),
         UNIQUE (bankaccno)
     )
@@ -71,7 +76,7 @@ def checkdb(cursor):
         passbook_path VARCHAR(255),
         passport_path VARCHAR(255),
         loan_amount BIGINT,
-        loan_status enum('approved', 'rejected', 'pending', 'disbursed'),
+        loan_status enum('approved', 'rejected', 'pending', 'disbursed', 'verified'),
         FOREIGN KEY (email) REFERENCES users(email)
     )      
     """)

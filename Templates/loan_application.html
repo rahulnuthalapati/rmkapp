@@ -293,9 +293,9 @@
             formData.append('business', document.getElementById('business').value);
             formData.append('amount', document.getElementById('amount').value);
             formData.append('adhaar', document.getElementById('adhaar').files[0]);
-            formData.append('pan', document.getElementById('pan').files[1]);
-            formData.append('passbook', document.getElementById('passbook').files[2]);
-            formData.append('passport', document.getElementById('passport-photo').files[3]);
+            formData.append('pan', document.getElementById('pan').files[0]);
+            formData.append('passbook', document.getElementById('passbook').files[0]);
+            formData.append('passport', document.getElementById('passport-photo').files[0]);
     
             try {
                 const response = await fetch('/api/loanapplication', {
@@ -323,6 +323,7 @@
                     messageDiv.style.color = 'red'; // Error message color
                 }
             } catch (error) {
+                console.error('Fetch error:', error);
                 const messageDiv = document.getElementById('message');
                 messageDiv.textContent = 'Error submitting loan application.';
                 messageDiv.style.display = 'block';

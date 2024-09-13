@@ -117,7 +117,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/loan_information')
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+        fetch(`/api/loan_information?email=${encodeURIComponent(email)}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
