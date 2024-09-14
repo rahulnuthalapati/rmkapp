@@ -106,20 +106,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    fetchLoanRequests();
+});
+
+function fetchLoanRequests() {
     $.ajax({
         type: 'GET',
-        url: '/api/user_loan',
+        url: '/api/get_all_loans', // Get all loan requests
         success: function(data) {
-            $('.loading-spinner').hide(); // Hide the loading spinner
-            if (!data || data.length === 0) {
+            $('.loading-spinner').hide(); 
+            if (!data.loan_requests_exists) {
                 $('#loan-requests-container').append(
                     '<div class="no-loan-message">No loan requests are available currently!</div>'
                 );
             } else {
-                $.each(data, function(index, value) {
+                $('#loan-requests-container').empty(); // Clear existing loan requests
+                $.each(data.loans, function(index, value) {
                     const statusIcon = getStatusIcon(value.loan_status);
                     $('#loan-requests-container').append(
-                        '<div class="loan-request" onclick="redirectToLoanDetails(\'' + value.email + '\')">' +
+                        '<div class="loan-request" data-email="' + value.email + '">' + 
                             '<img src="' + (value.profilePicPath || '/static/images/webpages/blank_profile.webp') + '" class="profile-pic" alt="Profile Picture">' +
                             '<div class="loan-info">' +
                                 '<strong>' + value.email + '</strong>' +
@@ -131,6 +136,12 @@ $(document).ready(function() {
                         '</div>'
                     );
                 });
+
+                // Attach click event listener to each loan request
+                $('.loan-request').click(function() {
+                    const email = $(this).data('email');
+                    redirectToLoanDetails(email);
+                });
             }
         },
         error: function() {
@@ -140,7 +151,7 @@ $(document).ready(function() {
             );
         }
     });
-});
+}
 
 // Function to get the appropriate status icon
 function getStatusIcon(status) {

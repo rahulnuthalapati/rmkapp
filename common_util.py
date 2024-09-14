@@ -112,3 +112,17 @@ def get_current_beneficiary_details(cur):
     result = cur.fetchone()
     return result
 
+
+def get_all_loans(cur):
+    cur.execute('SELECT * FROM user_loan')
+    loans = cur.fetchall()
+    return loans
+
+
+def modify_loan_status(cursor, loan_id, loan_status):
+    query = "UPDATE user_loan SET loan_status = %s WHERE loan_id = %s"
+    cursor.execute(query, (loan_status, loan_id))
+    cursor.connection.commit()
+
+
+

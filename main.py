@@ -121,15 +121,18 @@ def get_user_loan_requests():
     global current_user
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
-    email = current_user[1]
+    email = current_user[1] if current_role == 'beneficiary' else request.args.get('email')
     try:
         # Fetch loan requests for the current user
         # Assuming current_user[1] contains the email
+        print("fetching loan details for user", email)
         query = """
         SELECT * FROM user_loan WHERE email = %s
         """
         cursor.execute(query, (email,))
         result = cursor.fetchall()
+
+        print("Result: ", result)
 
         if not result:
             return jsonify({"loan_requests_exists": False})
@@ -140,6 +143,10 @@ def get_user_loan_requests():
                 'email': row[1],
                 'loan_amount': row[6],
                 'loan_status': row[7],
+                'aadhar_path': row[2], 
+                'pan_path': row[3],
+                'passbook_path': row[4],
+                'passport_path': row[5],
                 'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  # Default image if path is None
             })
 
@@ -621,6 +628,60 @@ def beneficiary_profiles():
 @app.route('/loan_management_page')
 def loan_management_page():
     return render_template('loan_management.html')
+
+@app.route('/api/modify_loan_status', methods=['POST'])
+def modify_loan_status():
+    data = request.get_json()
+    loan_id = data.get('loan_id')
+    loan_status = data.get('loan_status')
+
+    if not loan_id or not loan_status:
+        return jsonify({'error': 'Loan ID and loan status are required'}), 400
+
+    try:
+        cu.modify_loan_status(cursor, loan_id, loan_status)
+        return jsonify({'success': True, 'message': 'Loan status modified successfully'}), 200
+    except Exception as e:
+        print(f"Error modifying loan status: {e}")
+        return jsonify({'error': 'Error modifying loan status'}), 500
+
+@app.route('/api/get_all_loans', methods=['GET'])
+def get_all_loans():
+    try:
+        result = cu.get_all_loans(cursor)
+
+        print("Result: ", result)
+        if not result:
+            return jsonify({"loan_requests_exists": False})
+
+        loan_requests = []
+        for row in result:
+            loan_requests.append({
+                'email': row[1],
+                'loan_amount': row[6],
+                'loan_status': row[7],
+                'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  # Default image if path is None
+            })
+
+        print(jsonify({
+            "loan_requests_exists": True,
+            "loans": loan_requests
+        }))
+
+        return jsonify({
+            "loan_requests_exists": True,
+            "loans": loan_requests
+        })
+
+    except Exception as e:
+        print(f"Error fetching user loan requests: {e}")
+        return jsonify({"error": "Error fetching user loan requests"}), 500
+
+    return jsonify(loans)
+
+@app.route('/loan_details_page')
+def loan_details_page():
+    return render_template('loan_details.html') 
 
 @app.route('/api/logout', methods=['GET'])
 def logout():
