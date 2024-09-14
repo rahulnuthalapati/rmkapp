@@ -67,6 +67,9 @@ def signup_page():
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
+    global current_role
+    if current_role is None:
+        return "Please select role from homepage", 401
     print("signup for", request.form.get('email'), "is in progress...")
     success = cu.do_signup(request, cursor, current_role)
     if not success:
