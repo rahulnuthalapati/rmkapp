@@ -11,31 +11,52 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f4f4f4; 
         }
+
         .container {
+            position: absolute;
+            top: 10%;
+            bottom: 10%;
+            left: 10%;
+            right: 10%;
             padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            background-color: #fff;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            border-radius: 10px; /* rounded corners */
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Disable horizontal overflow */
+
         }
+
         h1 {
             text-align: center;
             margin-bottom: 20px;
         }
+
+        .loan-request-container {
+            flex: 1; /* Allow table-container to expand */
+            overflow-y: auto; /* Make loan-request-container scrollable */
+            border: 1px solid #ddd; /* Outline */
+            border-radius: 8px; /* Rounded corners */
+            padding: 10px;
+        }
+
         .loan-request {
             display: flex;
             align-items: center;
-            padding: 15px;
+            padding: 10px;
             border-bottom: 1px solid #ddd;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         .loan-request:hover {
             background-color: #f9f9f9;
         }
+
         .profile-pic {
             width: 50px;
             height: 50px;
@@ -43,34 +64,47 @@
             margin-right: 20px;
             object-fit: cover;
         }
+
         .loan-info {
             flex-grow: 1;
         }
+
         .loan-info strong {
             display: block;
             font-size: 16px;
             margin-bottom: 5px;
         }
+
         .loan-info span {
             color: #666;
             font-size: 14px;
         }
+
         .status-icon {
             font-size: 20px;
             margin-left: auto;
         }
+
         .loading-spinner {
             text-align: center;
             margin-top: 20px;
         }
+
         .loading-spinner i {
             font-size: 30px;
             color: #007bff;
         }
+
+        .no-loan-message {
+            text-align: center;
+            color: red;
+        }
+
         .tooltip {
             position: relative;
             display: inline-block;
         }
+
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 120px;
@@ -87,16 +121,23 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
+
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
+    .no-loans-message {
+        text-align: center;
+        color: green;
+        font-size: 18px;
+        margin-top: 20px;
+    }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Loan Requests</h1>
-    <div id="loan-requests-container">
+    <div class="loan-request-container" id="loan-requests-container">
         <div class="loading-spinner">
             <i class="fas fa-spinner fa-spin"></i> Loading loan requests...
         </div>
@@ -105,76 +146,108 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    fetchLoanRequests();
-});
-
-function fetchLoanRequests() {
-    $.ajax({
-        type: 'GET',
-        url: '/api/get_all_loans', // Get all loan requests
-        success: function(data) {
-            $('.loading-spinner').hide(); 
-            if (!data.loan_requests_exists) {
-                $('#loan-requests-container').append(
-                    '<div class="no-loan-message">No loan requests are available currently!</div>'
-                );
-            } else {
-                $('#loan-requests-container').empty(); // Clear existing loan requests
-                $.each(data.loans, function(index, value) {
-                    const statusIcon = getStatusIcon(value.loan_status);
-                    $('#loan-requests-container').append(
-                        '<div class="loan-request" data-email="' + value.email + '">' + 
-                            '<img src="' + (value.profilePicPath || '/static/images/webpages/blank_profile.webp') + '" class="profile-pic" alt="Profile Picture">' +
-                            '<div class="loan-info">' +
-                                '<strong>' + value.email + '</strong>' +
-                                '<span>Loan Amount: ₹' + value.loan_amount + '</span>' +
-                            '</div>' +
-                            '<div class="tooltip status-icon">' + statusIcon +
-                                '<span class="tooltiptext">' + value.loan_status + '</span>' +
-                            '</div>' +
-                        '</div>'
-                    );
-                });
-
-                // Attach click event listener to each loan request
-                $('.loan-request').click(function() {
-                    const email = $(this).data('email');
-                    redirectToLoanDetails(email);
-                });
-            }
-        },
-        error: function() {
-            $('.loading-spinner').hide();
-            $('#loan-requests-container').append(
-                '<div class="error-message">Error loading loan requests. Please try again later.</div>'
-            );
-        }
+    $(document).ready(function() {
+        checkUserRoleAndFetchRequests();
     });
-}
 
-// Function to get the appropriate status icon
-function getStatusIcon(status) {
-    switch (status) {
-        case 'approved':
-            return '<i class="fas fa-check-circle" style="color: green;"></i>';
-        case 'rejected':
-            return '<i class="fas fa-times-circle" style="color: red;"></i>';
-        case 'pending':
-            return '<i class="fas fa-clock" style="color: orange;"></i>';
-        case 'disbursed':
-            return '<i class="fas fa-money-bill-wave" style="color: blue;"></i>';
-        case 'verified':
-            return '<i class="fas fa-thumbs-up" style="color: purple;"></i>';
-        default:
-            return '<i class="fas fa-question-circle" style="color: gray;"></i>'; // Default icon for unknown status
+    function checkUserRoleAndFetchRequests() {
+        $.ajax({
+            type: 'GET',
+            url: '/api/get_user_role',
+            success: function(data) {
+                const isManager = data.is_manager;
+                if (isManager) {
+                    fetchLoanRequests('pending');
+                } else {
+                    fetchLoanRequests();
+                }
+            },
+            error: function() {
+                $('.loading-spinner').hide();
+                $('#loan-requests-container').append(
+                    '<div class="error-message">Error fetching user role. Please try again later.</div>'
+                );
+            }
+        });
     }
-}
 
-// Redirect to loan details page
-function redirectToLoanDetails(email) {
-    window.location.href = '/loan_details_page?email=' + encodeURIComponent(email);
-}
+    function fetchLoanRequests(status = '') {
+        $.ajax({
+            type: 'GET',
+            url: '/api/get_all_loans',
+            success: function(data) {
+                $('.loading-spinner').hide();
+                if (!data.loan_requests_exists) {
+                    $('#loan-requests-container').append(
+                        '<div class="no-loans-message">No loan requests are available currently!</div>'
+                    );
+                } else {
+                    $('#loan-requests-container').empty();
+                    let hasLoans = false; // Flag to check if any loans are displayed
+                    $.each(data.loans, function(index, value) {
+                        if (status && value.loan_status !== status) {
+                            return; // Skip non-matching status
+                        }
+                        hasLoans = true; // Set flag to true if loans are displayed
+                        const statusIcon = getStatusIcon(value.loan_status);
+                        $('#loan-requests-container').append(
+                            '<div class="loan-request" data-email="' + value.email + '" data-loan-id="' + value.loan_id +  '">' + 
+                                '<img src="' + (value.profilePicPath || '/static/images/webpages/blank_profile.webp') + '" class="profile-pic" alt="Profile Picture">' +
+                                '<div class="loan-info">' +
+                                    '<strong>Loan ID: ' + value.loan_id + '</strong>' +
+                                    '<strong>' + value.email + '</strong>' +
+                                    '<span>Loan Amount: ₹' + value.loan_amount + '</span>' +
+                                '</div>' +
+                                '<div class="tooltip status-icon">' + statusIcon +
+                                    '<span class="tooltiptext">' + value.loan_status + '</span>' +
+                                '</div>' +
+                            '</div>'
+                        );
+                    });
+
+                    if (!hasLoans && status === 'pending') {
+                        $('#loan-requests-container').append(
+                            '<div class="no-loans-message">No pending loans found!</div>'
+                        );
+                    }
+
+                    $('.loan-request').click(function() {
+                        const email = $(this).data('email');
+                        const loanId = $(this).data('loan-id');
+                        redirectToLoanDetails(email, loanId);
+                    });
+                }
+            },
+            error: function() {
+                $('.loading-spinner').hide();
+                $('#loan-requests-container').append(
+                    '<div class="error-message">Error loading loan requests. Please try again later.</div>'
+                );
+            }
+        });
+    }
+
+    function getStatusIcon(status) {
+        switch (status) {
+            case 'approved':
+                return '<i class="fas fa-check-circle" style="color: green;"></i>';
+            case 'rejected':
+                return '<i class="fas fa-times-circle" style="color: red;"></i>';
+            case 'pending':
+                return '<i class="fas fa-clock" style="color: orange;"></i>';
+            case 'disbursed':
+                return '<i class="fas fa-money-bill-wave" style="color: blue;"></i>';
+            case 'verified':
+                return '<i class="fas fa-thumbs-up" style="color: purple;"></i>';
+            default:
+                return '<i class="fas fa-question-circle" style="color: gray;"></i>';
+        }
+    }
+
+    function redirectToLoanDetails(email, loanId) { 
+        window.location.href = '/loan_details_page?email=' + encodeURIComponent(email) + '&loanId=' + loanId; 
+    }
 </script>
+
 </body>
 </html>

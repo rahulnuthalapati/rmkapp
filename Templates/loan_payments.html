@@ -118,10 +118,10 @@
                 } else {
                     payments.forEach(payment => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${payment.payment_id}</td>
-                            <td>${payment.amount}</td>
-                            <td>${payment.payment_date}</td>
+                        row.innerHTML = `\
+                            <td>${payment.payment_id}</td>\
+                            <td>${payment.amount}</td>\
+                            <td>${payment.payment_date}</td>\
                         `;
                         tbody.appendChild(row);
                     });
@@ -134,15 +134,18 @@
             });
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const loanId = urlParams.get('loanId');
+    document.addEventListener('DOMContentLoaded', () => {
+        const loanId = localStorage.getItem('selectedLoanId');
 
-    if (loanId) {
-        fetchPaymentHistory(loanId);
-    } else {
-        const tableContainer = document.querySelector('.table-container');
-        tableContainer.innerHTML = '<p>Loan ID is missing.</p>';
-    }
+        if (loanId) {
+            fetchPaymentHistory(loanId);
+            // Optionally, remove the loan ID from local storage after fetching
+            localStorage.removeItem('selectedLoanId');
+        } else {
+            const tableContainer = document.querySelector('.table-container');
+            tableContainer.innerHTML = '<p>Loan ID is missing.</p>';
+        }
+    });
 </script>
 </body>
 </html>

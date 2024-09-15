@@ -7,7 +7,7 @@ import os
 import json
 from werkzeug.utils import secure_filename
 
-cnx = mysql.connector.connect(user='root', password='1234')
+cnx = mysql.connector.connect(user='root', password='')
 
 cursor = cnx.cursor()
 dbop.checkdb(cursor)
@@ -140,14 +140,23 @@ def get_user_loan_requests():
     try:
         # Fetch loan requests for the current user
         # Assuming current_user[1] contains the email
-        print("fetching loan details for user", email)
-        query = """
-        SELECT * FROM user_loan WHERE email = %s
-        """
-        cursor.execute(query, (email,))
+        loan_id = request.args.get('loanId') 
+        print("fetching loan details for user", email, "with loan id", loan_id)
+
+        if loan_id: 
+            query = """
+            SELECT * FROM user_loan WHERE email = %s AND loan_id = %s 
+            """
+            cursor.execute(query, (email, loan_id))
+        else: 
+            query = """
+            SELECT * FROM user_loan WHERE email = %s
+            """
+            cursor.execute(query, (email,))
+        
         result = cursor.fetchall()
 
-        print("Result: ", result)
+        # print("Result: ", result)
 
         if not result:
             return jsonify({"loan_requests_exists": False})
@@ -155,6 +164,7 @@ def get_user_loan_requests():
         loan_requests = []
         for row in result:
             loan_requests.append({
+                'loan_id': row[0],
                 'email': row[1],
                 'loan_amount': row[6],
                 'loan_status': row[7],
@@ -188,6 +198,14 @@ def profile_info():
     profile_picture = current_user[9] if current_user[9] is not None else '/static/images/webpages/blank_profile.webp'
     user_info = { "name": current_user[0], "phone": current_user[3], "dob": current_user[5].strftime('%Y-%m-%d') if current_user[5] else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
     return jsonify(user_info)
+
+@app.route('/api/get_user_role', methods=['GET'])
+def get_user_role():
+    global current_role 
+    if current_role == 'organizer': 
+        return jsonify({'is_manager': True}), 200
+    else:
+        return jsonify({'is_manager': False}), 200
 
 @app.route('/api/update_profile', methods=['POST'])
 def update_profile():
@@ -268,7 +286,7 @@ def api_loan_information():
     global current_user
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
-    email = current_user[1]
+    email = request.args.get('email') or current_user[1]
     try:
         query = """
         SELECT * FROM user_loan
@@ -306,31 +324,6 @@ def api_loan_information():
     except Exception as e:
         print(f"Error fetching loan information: {e}")
         return jsonify({"error": "Error fetching loan information"}), 500
-    
-@app.route('/api/record_payment', methods=['POST'])
-def record_payment():
-    try:
-        data = request.get_json()
-        loan_id = data.get('loan_id')
-        email = data.get('email')
-        amount = data.get('amount')
-        payment_date = data.get('payment_date')
-
-        if not all([loan_id, email, amount, payment_date]):
-            return jsonify({'error': 'Missing required data'}), 400
-
-        query = """
-        INSERT INTO loan_payments (loan_id, email, amount, payment_date)
-        VALUES (%s, %s, %s, %s)
-        """
-        cursor.execute(query, (loan_id, email, amount, payment_date))
-        cnx.commit()
-        return jsonify({'message': 'Payment recorded successfully'}), 200
-    except Exception as e:
-        print(f"Error recording payment: {e}")
-        cnx.rollback()
-        return jsonify({'error': 'Error recording payment'}), 500
-
 
 @app.route('/api/get_loan_payments', methods=['GET'])
 def get_loan_payments():
@@ -650,11 +643,14 @@ def modify_loan_status():
     loan_id = data.get('loan_id')
     loan_status = data.get('loan_status')
 
+    print("Request: ", data)
+
     if not loan_id or not loan_status:
         return jsonify({'error': 'Loan ID and loan status are required'}), 400
 
     try:
         cu.modify_loan_status(cursor, loan_id, loan_status)
+        cnx.commit()
         return jsonify({'success': True, 'message': 'Loan status modified successfully'}), 200
     except Exception as e:
         print(f"Error modifying loan status: {e}")
@@ -672,6 +668,7 @@ def get_all_loans():
         loan_requests = []
         for row in result:
             loan_requests.append({
+                'loan_id': row[0],
                 'email': row[1],
                 'loan_amount': row[6],
                 'loan_status': row[7],
@@ -705,6 +702,35 @@ def logout():
     global current_role
     current_role = None
     return redirect('/home')
+
+@app.route('/record_payment_page', methods=['GET']) 
+def record_payment_page(): 
+    return render_template('record_payment.html')
+
+@app.route('/api/record_payment', methods=['POST'])
+def record_payment():
+    try:
+        loan_id = request.form.get('loan_id')
+        email = request.form.get('email')
+        amount = request.form.get('amount')
+        payment_date = request.form.get('payment_date')
+
+        if not all([loan_id, email, amount, payment_date]):
+            return jsonify({'error': 'Missing required data'}), 400
+
+        # Insert payment details into the database
+        query = """
+        INSERT INTO loan_payments (loan_id, email, amount, payment_date)
+        VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(query, (loan_id, email, amount, payment_date))
+        cnx.commit()
+        return jsonify({'message': 'Payment recorded successfully'}), 200
+    except Exception as e:
+        print(f"Error recording payment: {e}")
+        cnx.rollback()
+        return jsonify({'error': 'Error recording payment'}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

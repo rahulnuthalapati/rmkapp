@@ -21,17 +21,36 @@
         }
 
         .container {
-            position: absolute;
-            top: 10%;
-            bottom: 10%;
-            left: 10%;
-            right: 10%;
+            /* Remove position: absolute, left, right, bottom, top  */
+            margin: 20px auto; /* Center horizontally  */
+            width: 90%; /* Occupy 90% of the viewport width */
+            max-width: 800px; 
             padding: 20px;
-            background-color: #fff;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            border-radius: 10px; 
             display: flex;
-            flex-direction: column; /* Arrange content vertically */
+            flex-direction: column; 
+            /* overflow-x: hidden; -  Remove this */ 
+        }
+
+        .loan-request-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            border: 1px solid #ddd;  
+            border-radius: 8px;  
+            padding: 10px;
+            word-break: break-all; /* Added to allow text to break within the container */
+        }
+
+        .loan-request {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         h1 {
@@ -73,75 +92,183 @@
             display: flex;
             justify-content: center; /* Center the button */
         }
+        #grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center align items horizontally */
+        }
+
+        #images-container {
+            display: flex; /* Align images horizontally */
+            flex-wrap: wrap; /* Allow images to wrap to the next line if there are too many */
+            justify-content: center; /* Center align images horizontally */
+            gap: 10px; /* Space between images */
+            margin-top: 20px; /* Space above the images */
+        }
+
+        .loan-image {
+            width: 150px; /* Set fixed width for images */
+            height: 150px; /* Set fixed height for images */
+            object-fit: cover; /* Ensure images cover the area without distortion */
+        }
+
+        #loan-id {
+            font-size: 18px; /* Adjust font size for loan ID */
+            font-weight: bold; /* Make loan ID text bold */
+            margin-bottom: 10px; /* Space between loan ID and other content */
+        }
+
+
+        .button-container .button {
+            margin-right: 10px; /* Add 10px spacing to the right of each button */
+        }
+
+        .button-container .button:last-child {
+            margin-right: 0; /* Remove margin from the last button to avoid extra space at the end */
+        }
+
+        #approveButton { /* Targets the Approve button specifically */
+        background-color: #4CAF50; /* Green color */
+        }
+
+        #approveButton:hover { 
+        background-color: #45a049; /* Darker green on hover */
+        }
+
+        #rejectButton { /* Targets the Reject button specifically */
+        background-color: #f44336; /* Red color */
+        }
+
+        #rejectButton:hover { 
+        background-color: #d32f2f; /* Darker red on hover */
+        }
+
+        .block-cursor {
+            cursor: not-allowed; /* Makes the cursor look like it's blocked */
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Loan Details</h1>
-        <div id="grid"></div>
+        <div id="grid">
+            <div id="images-container" class="images-container">
+                <!-- Images will be appended here -->
+            </div>
+        </div>
         <div class="button-container">
             <button id="verifyButton" class="button" style="display: none;">Verify</button> 
-            <button id="disburseButton" class="button" style="display: none;">Disburse</button>
+            <button id="approveButton" class="button" style="display: none;">Approve</button>
+            <button id="rejectButton" class="button" style="display: none;">Reject</button> 
+            <button id="disburseButton" class="button" style="display: none;" disabled>Disburse (Awaiting Manager Approval)</button> <div id="disburseButton" class="button" style="display: none;" disabled>Disburse (Awaiting Manager Approval)</div>
             <button id="recordPaymentButton" class="button" style="display: none;">Record Payment</button>
-        </div>    
+            <button id="viewPaymentHistoryButton" class="button" style="display: none;">View Payment History</button>
+          </div>     
     </div>
     
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-let currentLoan = null; // Global variable to store the current loan details
+    let currentLoan = null; // Global variable to store the current loan details
+    let isManager = false; // Flag to indicate if the user is a manager
 
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const email = urlParams.get('email');
-    
-    if (email) { 
-        const newUrl = window.location.pathname; // Get the path without query string
-        window.history.replaceState({}, '', newUrl);  // Update URL without reloading
-        fetchLoanDetails(email); 
-    } else {
-        // Handle case where email is missing
-        $('#loan-details').html('<p>Error: Email is missing.</p>');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        const loanId = urlParams.get('loanId');  // Get loanId from URL parameters
+        console.log("urlParams:", urlParams.get('email'), urlParams.get('loanId'));
 
-    fetchLoanDetails(email); 
+        if (email) { 
+            const newUrl = window.location.pathname; // Get the path without query string
+            window.history.replaceState({}, '', newUrl);  // Update URL without reloading
+        } else {
+            $('#loan-details').html('<p>Error: Email is missing.</p>');
+            return;
+        }
 
-    const verifyButton = document.getElementById('verifyButton');
-    const disburseButton = document.getElementById('disburseButton');
-    const recordPaymentButton = document.getElementById('recordPaymentButton'); 
+        fetch('/api/get_user_role') // Replace '/api/get_user_role' with your actual endpoint
+        .then(response => response.json())
+        .then(data => {
+            isManager = data.is_manager;
+            fetchLoanDetails(email, loanId);  
 
-    verifyButton.addEventListener('click', () => {
-        const newStatus = 'verified';
-        modifyLoanStatus(currentLoan.loan_id, newStatus);
+            // Manage button visibility based on initial loan status
+            if (currentLoan) { 
+                manageButtonVisibility(currentLoan.loan_status);
+            }
+        })
+        .catch(error => console.error('Error fetching user role:', error));
+
+        const verifyButton = document.getElementById('verifyButton');
+        const disburseButton = document.getElementById('disburseButton');
+        const recordPaymentButton = document.getElementById('recordPaymentButton');
+        const viewPaymentHistoryButton = document.getElementById('viewPaymentHistoryButton');
+        const rejectButton = document.getElementById('rejectButton');
+        const approveButton = document.getElementById('approveButton');
+
+        verifyButton.addEventListener('click', () => {
+            const newStatus = 'verified';
+            console.log("Loan ID:", currentLoan.loan_id);
+            modifyLoanStatus(currentLoan.loan_id, newStatus);
+        });
+
+        disburseButton.addEventListener('click', () => {
+            const newStatus = 'disbursed'; 
+            modifyLoanStatus(currentLoan.loan_id, newStatus);
+        });
+
+        recordPaymentButton.addEventListener('click', () => {
+            window.location.href = '/record_payment_page?loanId=' + currentLoan.loan_id + '&email=' + currentLoan.email; 
+        });
+
+        viewPaymentHistoryButton.addEventListener('click', () => {
+            if (currentLoan && currentLoan.loan_id) {
+                localStorage.setItem('selectedLoanId', currentLoan.loan_id);
+                window.location.href = 'loan_payment_page'; // Redirect to the payment history page
+            } else {
+                alert('No loan information available.');
+            }
+        });
+
+        rejectButton.addEventListener('click', () => {
+            const newStatus = 'rejected';
+            modifyLoanStatus(currentLoan.loan_id, newStatus);
+        });
+
+        approveButton.addEventListener('click', () => {
+            const newStatus = 'approved';
+            modifyLoanStatus(currentLoan.loan_id, newStatus);
+        });        
     });
 
-    disburseButton.addEventListener('click', () => {
-        const newStatus = 'disbursed'; 
-        modifyLoanStatus(currentLoan.loan_id, newStatus);
-    });
-
-    recordPaymentButton.addEventListener('click', () => {
-        // ... (Handle record payment logic, redirect to payment page, etc.) ...
-        window.location.href = '/loan_payment_page?loanId=' + currentLoan.loan_id; 
-    });
-});
-
-function fetchLoanDetails(email) {
+    function fetchLoanDetails(email, loanId) {
+    console.log("fetching loan details for user", email, "with loan id", loanId);
     $.ajax({
         type: 'GET',
         url: '/api/user_loan',
-        data: { email: email }, 
+        data: { email: email, loanId: loanId }, 
         success: function(data) {
             if (data.loan_requests_exists) {
-                currentLoan = data.loans[0]; // Store loan details globally
-                const loan = currentLoan;
+                console.log("Loan details:", data.loans);
+                const loan = data.loans[0];
+                if (!loan) {
+                    $('#loan-details').html('<p>Error: Loan not found.</p>');
+                    return;
+                }
+
+                currentLoan = loan;
                 const loanDetailsContainer = $('#grid');
+                const imagesContainer = $('#images-container'); // Get the images container
                 loanDetailsContainer.empty(); // Clear existing details
+                imagesContainer.empty();      // Clear existing images
+
+                // Append Loan ID and other details to loanDetailsContainer
+                loanDetailsContainer.append('<p id="loan-id"><strong>Loan ID:</strong> ' + loan.loan_id + '</p>');
                 loanDetailsContainer.append('<p><strong>Email:</strong> ' + loan.email + '</p>');
                 loanDetailsContainer.append('<p><strong>Loan Amount:</strong> ₹' + loan.loan_amount + '</p>');
                 loanDetailsContainer.append('<p><strong>Loan Status:</strong> ' + loan.loan_status + '</p>');
-
-                // Add images if paths exist
+                // Append loan images
                 if (loan.aadhar_path) {
                     loanDetailsContainer.append('<img src="' + loan.aadhar_path + '" alt="Aadhaar" class="loan-image">');
                 }
@@ -155,7 +282,6 @@ function fetchLoanDetails(email) {
                     loanDetailsContainer.append('<img src="' + loan.passport_path + '" alt="Passport" class="loan-image">');
                 }
 
-                // Manage button visibility based on loan status
                 manageButtonVisibility(loan.loan_status);
             } else {
                 $('#loan-details').html('<p>No loan details found for this beneficiary.</p>');
@@ -167,46 +293,82 @@ function fetchLoanDetails(email) {
     });
 }
 
-function modifyLoanStatus(loanId, newStatus) {
-    $.ajax({
-        type: 'POST',
-        url: '/api/modify_loan_status', 
-        contentType: 'application/json',
-        data: JSON.stringify({ loan_id: loanId, loan_status: newStatus }),
-        success: function(data) {
-            if (data.success) {
-                // Update loan details without page refresh
-                fetchLoanDetails(currentLoan.email); 
-                // Update loan requests on the loan management page
-                fetchLoanRequests(); 
-            } else {
-                alert('Error modifying loan status: ' + data.error); 
+
+    function modifyLoanStatus(loanId, newStatus) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/modify_loan_status', 
+            contentType: 'application/json',
+            data: JSON.stringify({ loan_id: loanId, loan_status: newStatus }),
+            success: function(data) {
+                if (data.success) {
+                    console.log("Loan status modified successfully, loan id:", currentLoan.loanId, "email:", currentLoan.email);
+                    fetchLoanDetails(currentLoan.email, loanId); 
+                    fetchLoanRequests(); 
+                } else {
+                    alert('Error modifying loan status: ' + data.error); 
+                }
+            },
+            error: function(error) {
+                console.error('Error modifying loan status:', error);
+                alert('An error occurred while modifying the loan status. Please try again.');
             }
-        },
-        error: function(error) {
-            console.error('Error modifying loan status:', error);
-            alert('An error occurred while modifying the loan status. Please try again.');
+        });
+    }
+
+    function manageButtonVisibility(status) {
+        const verifyButton = document.getElementById('verifyButton');
+        const rejectButton = document.getElementById('rejectButton');
+        const approveButton = document.getElementById('approveButton'); 
+        const disburseButton = document.getElementById('disburseButton');
+        const recordPaymentButton = document.getElementById('recordPaymentButton');
+
+        // Hide all buttons initially
+        verifyButton.style.display = 'none'; 
+        rejectButton.style.display = 'none';
+        approveButton.style.display = 'none';
+        disburseButton.style.display = 'none';
+        recordPaymentButton.style.display = 'none';
+        viewPaymentHistoryButton.style.display = 'none';
+
+        // Remove block cursor class and reset styles
+        disburseButton.classList.remove('block-cursor');
+        disburseButton.style.opacity = '1';
+        disburseButton.disabled = false;
+
+        if (isManager) { 
+            if (status === 'pending' || status === 'verified') {
+                approveButton.style.display = 'block';
+                rejectButton.style.display = 'block';
+            } else if (status === 'approved') {
+                disburseButton.style.display = 'block';
+                disburseButton.disabled = false; 
+                disburseButton.textContent = 'Disburse'; 
+            } else if (status === 'disbursed') {
+                recordPaymentButton.style.display = 'block';
+                viewPaymentHistoryButton.style.display = 'block';
+            }
+        } else { 
+            if (status === 'pending') {
+                verifyButton.style.display = 'block';
+                rejectButton.style.display = 'block';
+            } else if (status === 'verified') {
+                disburseButton.style.display = 'block'; 
+                disburseButton.disabled = true;
+                disburseButton.textContent = 'Disburse (Pending Manager Approval)';
+                disburseButton.classList.add('block-cursor'); // Add the block cursor class
+                disburseButton.style.opacity = '0.5'; // Make the button look inactive
+            } else if (status === 'approved') {
+                disburseButton.style.display = 'block'; 
+                disburseButton.textContent = 'Disburse';
+            } else if (status === 'disbursed') {
+                recordPaymentButton.style.display = 'block';
+                viewPaymentHistoryButton.style.display = 'block';
+            }
         }
-    });
-}
+    }
 
-function manageButtonVisibility(status) {
-    const verifyButton = document.getElementById('verifyButton');
-    const disburseButton = document.getElementById('disburseButton');
-    const recordPaymentButton = document.getElementById('recordPaymentButton');
-
-    verifyButton.style.display = 'none'; // Hide all buttons by default
-    disburseButton.style.display = 'none';
-    recordPaymentButton.style.display = 'none'; 
-
-    if (status === 'pending') {
-        verifyButton.style.display = 'block';
-    } else if (status === 'approved') {
-        disburseButton.style.display = 'block';
-    } else if (status === 'disbursed') { 
-        recordPaymentButton.style.display = 'block'; 
-    } 
-}
 </script>
+
 </body>
 </html>

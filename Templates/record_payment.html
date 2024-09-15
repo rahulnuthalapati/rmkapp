@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Loan Payment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px; /* Add space between button and content */
+        }
+
+        .button:hover {
+            background-color: #2c2c2c;
+        }
+
+        .display-only {
+            background-color: #f5f5f5; 
+            border: 1px solid #ccc; 
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Record Loan Payment</h1>
+        <form id="paymentForm">
+            <div class="input-group">
+                <label for="loanId">Loan ID:</label>
+                <input type="text" id="loanId" name="loan_id" readonly class="display-only"> 
+            </div>
+            <div class="input-group">
+                <label for="email">Beneficiary Email:</label>
+                <input type="email" id="email" name="email" readonly class="display-only"> 
+            </div>
+            <div class="input-group">
+                <label for="amount">Amount Paid (₹):</label>
+                <input type="number" id="amount" name="amount" required>
+            </div>
+            <div class="input-group">
+                <label for="paymentDate">Payment Date:</label>
+                <input type="date" id="paymentDate" name="payment_date" readonly class="display-only">
+            </div>
+            <button type="submit" class="button">Record Payment</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loanId = urlParams.get('loanId');
+            const email = urlParams.get('email'); 
+
+            if (loanId) {
+                document.getElementById('loanId').value = loanId;
+            }
+
+            if (email) {
+                document.getElementById('email').value = email;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+
+            const paymentForm = document.getElementById('paymentForm');
+            paymentForm.addEventListener('submit', (event) => {
+                event.preventDefault(); 
+                const formData = new FormData(paymentForm); 
+                fetch('/api/record_payment', { // Update endpoint if necessary
+                    method: 'POST',
+                    body: formData 
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Error recording payment.');
+                    }
+                })
+                .then(data => {
+                    // Handle success (e.g., display a success message, redirect)
+                    alert(data.message);
+                    // Example: Redirect back to the loan details page
+                    window.location.href = '/loan_details_page?email=' + email + '&loanId=' + loanId; 
+                })
+                .catch(error => {
+                    // Handle errors (e.g., display an error message)
+                    console.error(error);
+                    alert(error.message);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -122,7 +122,6 @@ def get_all_loans(cur):
 def modify_loan_status(cursor, loan_id, loan_status):
     query = "UPDATE user_loan SET loan_status = %s WHERE loan_id = %s"
     cursor.execute(query, (loan_status, loan_id))
-    cursor.connection.commit()
 
 
 
