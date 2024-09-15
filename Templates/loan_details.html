@@ -14,6 +14,12 @@
             background-color: #f4f4f4;
         }
 
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
         .container {
             position: absolute;
             top: 10%;
@@ -72,7 +78,7 @@
 <body>
     <div class="container">
         <h1>Loan Details</h1>
-        <div id="loan-details"></div>
+        <div id="grid"></div>
         <div class="button-container">
             <button id="verifyButton" class="button" style="display: none;">Verify</button> 
             <button id="disburseButton" class="button" style="display: none;">Disburse</button>
@@ -129,7 +135,7 @@ function fetchLoanDetails(email) {
             if (data.loan_requests_exists) {
                 currentLoan = data.loans[0]; // Store loan details globally
                 const loan = currentLoan;
-                const loanDetailsContainer = $('#loan-details');
+                const loanDetailsContainer = $('#grid');
                 loanDetailsContainer.empty(); // Clear existing details
                 loanDetailsContainer.append('<p><strong>Email:</strong> ' + loan.email + '</p>');
                 loanDetailsContainer.append('<p><strong>Loan Amount:</strong> ₹' + loan.loan_amount + '</p>');

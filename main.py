@@ -7,7 +7,7 @@ import os
 import json
 from werkzeug.utils import secure_filename
 
-cnx = mysql.connector.connect(user='root', password='')
+cnx = mysql.connector.connect(user='root', password='1234')
 
 cursor = cnx.cursor()
 dbop.checkdb(cursor)
@@ -86,6 +86,21 @@ def beneficiary_page():
         current_role = 'beneficiary'
         return redirect(url_for('login_page'))
     return render_template('beneficiary.html')
+
+
+@app.route('/beneficiary_link', methods=['GET'])
+def beneficiary_link_page():
+    # email = request.args.get('email')  # Get the email from the query parameters
+    #
+    # # Fetch the beneficiary data using the email (you'll replace this with your actual logic)
+    # beneficiary_data = get_beneficiary_data_by_email(email)
+
+    # if beneficiary_data is None:
+    #     return "Beneficiary not found", 404
+
+    # Pass the fetched data to the beneficiary.html template to display it
+    return render_template('beneficiary_link.html')
+
 
 @app.route('/manager')
 def manager_page():

@@ -98,7 +98,7 @@
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search beneficiaries..." onkeyup="filterTable()">
         </div>
-        <h1>Beneficiary Profiles</h1>
+        <h1>Beneficiary Loan Management</h1>
     </div>
     <div class="table-container">
         <table id="beneficiary-profiles-table">
@@ -145,7 +145,7 @@ $(document).ready(function() {
 
 // Redirect to loan information page
 function redirectToLoanInfo(email) {
-    window.location.href = '/loan_information_page?email=' + encodeURIComponent(email);
+    window.location.href = '/beneficiary_link?email=' + encodeURIComponent(email);
 }
 
     // Search filter function
