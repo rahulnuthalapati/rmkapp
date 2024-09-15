@@ -14,6 +14,9 @@ def do_signup(request_object, cur, user_type):
                 "INSERT INTO users (name, email, type, phone, password) VALUES (%s, %s, %s, %s, %s)",
                 (name, email, user_type, phone, password))
         elif user_type == 'organizer':
+            bank = request_object.form.get('bank')
+            if bank not in ['Chennai', 'Tirupati', 'Poonamalle']: # Validate bank selection
+                return False 
             cur.execute(
                 "INSERT INTO users (name, email, type, phone, password, bank) VALUES (%s, %s, %s, %s, %s, %s)",
                 (name, email, user_type, phone, password, bank))

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loan Information</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -133,14 +134,14 @@
                             statusClass = 'status-rejected';
                         }
                         let paymentHistoryCell = '<td>No Payment History</td>';
-                        if (loan.payment_exist) {
+                        if (loan.payment_exists) {
                             paymentHistoryCell = `
-                                <td>
-                                    <a href="/loan_payment_page?loanId=${loan.loan_id}">
-                                        <i class="fas fa-arrow-right"></i> 
-                                    </a>
-                                </td>`;
-                        }
+                            <td>
+                                <a href="/loan_payment_page?loanId=${loan.loan_id}&email=${email}">
+                                    <i class="fas fa-arrow-right"></i> 
+                                </a>
+                            </td>`;
+                    }
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${loan.loan_id}</td> 

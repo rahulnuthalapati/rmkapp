@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 500px;
+        margin: 30px auto; /* Center the container */
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        color: #555;
+        margin-bottom: 15px;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    button[type="submit"] {
+        background-color: #4a4a4a;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #2c2c2c;
+    }
+
+    .error {
+        color: red;
+        margin-top: 5px;
+    }
+
+    /* Style for the display-only fields (used in record_payment.html) */
+    .display-only {
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        cursor: not-allowed;
+    }
+    .settings-item {
+        border-bottom: 1px solid #ddd;
+        padding: 15px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .settings-item:last-child {
+        border-bottom: none;
+    }
+
+    .settings-item a {
+        text-decoration: none;
+        color: #333;
+        transition: color 0.3s ease; /* Add a smooth color transition on hover */
+    }
+
+    .settings-item a:hover {
+        color: #007bff; /* Change link color on hover */
+    }
+
+    .settings-item i {
+        margin-right: 10px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>System Settings</h1>
+
+        <div class="settings-item">
+            <a href="{{ url_for('edit_profile_page') }}">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </a>
+        </div>
+        <div class="settings-item">
+            <a href="{{ url_for('change_password_page') }}">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+        </div>
+        <div class="settings-item">
+            <span>
+                <i class="fas fa-bell"></i> Push Notifications (Coming Soon!)
+            </span>
+        </div>
+    </div>
+</body>
+</html>

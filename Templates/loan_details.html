@@ -164,6 +164,7 @@
             <button id="disburseButton" class="button" style="display: none;" disabled>Disburse (Awaiting Manager Approval)</button> <div id="disburseButton" class="button" style="display: none;" disabled>Disburse (Awaiting Manager Approval)</div>
             <button id="recordPaymentButton" class="button" style="display: none;">Record Payment</button>
             <button id="viewPaymentHistoryButton" class="button" style="display: none;">View Payment History</button>
+            <button id="completeLoanButton" class="button" style="display: none;">Complete Loan</button>
           </div>     
     </div>
     
@@ -239,7 +240,13 @@
         approveButton.addEventListener('click', () => {
             const newStatus = 'approved';
             modifyLoanStatus(currentLoan.loan_id, newStatus);
-        });        
+        });  
+        
+        const completeLoanButton = document.getElementById('completeLoanButton');
+        completeLoanButton.addEventListener('click', () => {
+            const newStatus = 'completed';
+            modifyLoanStatus(currentLoan.loan_id, newStatus);
+        });
     });
 
     function fetchLoanDetails(email, loanId) {
@@ -365,6 +372,10 @@
                 recordPaymentButton.style.display = 'block';
                 viewPaymentHistoryButton.style.display = 'block';
             }
+        }
+
+        if (isManager && status === 'disbursed') { 
+            completeLoanButton.style.display = 'block';
         }
     }
 

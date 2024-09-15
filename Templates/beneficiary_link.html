@@ -184,30 +184,8 @@
             <div class="header">
                 <h2>Beneficiary Profiles</h2>
             </div>
-            <div class="greeting-container">
-                <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic">
-                <div class="greeting"></div>
-            </div>
-<!--            <div class="top-right-buttons">-->
-<!--                <div class="notification-button" onclick="handleButtonClick('notifications')">-->
-<!--                  <i class="fas fa-bell"></i>-->
-<!--                </div>-->
-<!--                <div class="logout-button" onclick="handleLogout()">-->
-<!--                  <span>Logout</span>-->
-<!--                  <i class="fas fa-sign-out-alt"></i>-->
-<!--                </div>-->
-<!--                <div class="notification-overlay" id="notification-overlay">-->
-<!--                    <div class="notification-content" id="notification-content">-->
-<!--                        &lt;!&ndash; Notifications or "No notifications right now" message will be inserted here &ndash;&gt;-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
 
             <div class="grid">
-<!--                <button type="button" onclick="handleButtonClick('apply_for_loan')">-->
-<!--                    <i class="fas fa-hand-holding-usd"></i>-->
-<!--                    Apply for Loan-->
-<!--                </button>-->
                 <button type="button" onclick="handleButtonClick('loan_info')">
                     <i class="fas fa-info-circle"></i>
                     Loan Info
@@ -219,45 +197,48 @@
                 <button type="button" onclick="handleButtonClick('income_and_savings')">
                     <i class="fas fa-piggy-bank"></i>
                     Income and Savings
-                </button>
-<!--                <button type="button" onclick="handleButtonClick('feedback_and_surveys')">-->
-<!--                    <i class="fas fa-comment-alt"></i>-->
-<!--                    Feedback and Surveys-->
-<!--                </button>-->
-<!--                <button type="button" onclick="handleButtonClick('manage_profile')">-->
-<!--                    <i class="fas fa-user-cog"></i>-->
-<!--                    Manage Profile-->
-<!--                </button>-->
             </div>
         </div>
     </div>
 
     <script>
-        // Fetch user profile info and update the greeting text and profile picture
-        async function fetchUserName() {
-            try {
-                const response = await fetch('/api/profileinfo');
-                const data = await response.json();
-                const userName = data.name || 'Beneficiary';
-                const profilePicPath = data.profilePicPath || '/path/to/default/profile-pic.jpg'; // Default profile picture path
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
 
-                document.querySelector('.greeting').textContent = `Hello ${userName}!`;
-                document.getElementById('profile-pic').src = profilePicPath;
+            if (email) {
+                fetchUserProfile(email);
+                updateUrls(email); // Update URLs to include email
+            } else {
+                console.error('Error: Email is missing.');
+            } 
+        });
+
+        async function fetchUserProfile(email) {
+            try {
+                const response = await fetch(`/api/profileinfo?email=${encodeURIComponent(email)}`); 
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                document.querySelector('.greeting').textContent = `Viewing ${data.name}'s Profile`;
+                document.getElementById('profile-pic').src = data.profilePicPath;
             } catch (error) {
                 console.error('Error fetching user profile info:', error);
             }
         }
 
-        fetchUserName();
+        // Function to update URLs with the email
+        function updateUrls(email) {
+            urls.loan_info += '?email=' + encodeURIComponent(email);
+            urls.economic_activity += '?email=' + encodeURIComponent(email);
+            urls.income_and_savings += '?email=' + encodeURIComponent(email);
+        }
 
-        const urls = {
-            apply_for_loan: "{{ url_for('loan_application_page') }}",
-            manage_profile: "{{ url_for('profile_page') }}",
+        const urls = { // Define the URLs for the buttons
             loan_info: "{{ url_for('loan_information_page') }}",
             economic_activity: "{{ url_for('economic_activities_page') }}",
             income_and_savings: "{{ url_for('income_savings_page') }}",
-            feedback_and_surveys: "{{ url_for('feedback_page') }}",
-            notifications: "{{ url_for('notifications_page') }}"
         };
 
         function handleButtonClick(value) {
@@ -268,107 +249,6 @@
                 console.error('Unknown action:', value);
             }
         }
-
-        let notificationOverlayVisible = false;
-
-        function handleButtonClick(value) {
-            if (value === 'notifications') {
-                toggleNotificationOverlay();
-            } else {
-                const url = urls[value];
-                if (url) {
-                    window.location.href = url;
-                } else {
-                    console.error('Unknown action:', value);
-                }
-            }
-        }
-
-        function toggleNotificationOverlay() {
-            const notificationOverlay = document.getElementById('notification-overlay');
-            if (notificationOverlayVisible) {
-                hideNotificationOverlay();
-            } else {
-                showNotificationOverlay();
-                fetchNotifications();
-                // Attach click event to close overlay when clicking outside
-                document.addEventListener('click', closeOverlayOnClick);
-            }
-            notificationOverlayVisible = !notificationOverlayVisible;
-        }
-
-        function closeOverlayOnClick(event) {
-            const notificationOverlay = document.getElementById('notification-overlay');
-            // Close the overlay only if the click is outside of it
-            if (notificationOverlayVisible && !notificationOverlay.contains(event.target) && !event.target.closest('.notification-button')) {
-                hideNotificationOverlay();
-                document.removeEventListener('click', closeOverlayOnClick);
-                notificationOverlayVisible = false;
-            }
-        }
-
-        function showNotificationOverlay() {
-            document.getElementById('notification-overlay').classList.add('show');
-        }
-
-        function hideNotificationOverlay() {
-            document.getElementById('notification-overlay').classList.remove('show');
-        }
-
-        function fetchNotifications() {
-            fetch('/api/notifications')
-                .then(response => {
-                    // Check if the response is OK, otherwise throw an error
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json(); // Attempt to parse JSON
-                })
-                .then(data => {
-                    const notificationContent = document.getElementById('notification-content');
-                    notificationContent.innerHTML = '';  // Clear previous notifications
-
-                    // Handle case where no notifications are returned or an empty array
-                    if (!data || data.length === 0) {
-                        const noNotificationMessage = document.createElement('div');
-                        noNotificationMessage.textContent = 'No notifications right now';
-                        noNotificationMessage.style.color = '#333'; // Optional styling
-                        noNotificationMessage.style.textAlign = 'center'; // Center the message
-                        notificationContent.appendChild(noNotificationMessage);
-                    } else {
-                        // If notifications exist, display them
-                        data.forEach(notification => {
-                            const notificationHTML = `<div>${notification.message}</div>`;
-                            notificationContent.insertAdjacentHTML('beforeend', notificationHTML);
-                        });
-                    }
-                })
-                .catch(error => {
-                    // Handle any errors with fetching the data or processing the response
-                    console.error('Error fetching notifications:', error);
-
-                    // Display "No notifications right now" message in case of an error
-                    const notificationContent = document.getElementById('notification-content');
-                    notificationContent.innerHTML = '';  // Clear previous content
-                    const errorMessage = document.createElement('div');
-                    errorMessage.textContent = 'No notifications right now';
-                    errorMessage.style.color = '#333'; // Optional styling
-                    errorMessage.style.textAlign = 'center'; // Center the message
-                    notificationContent.appendChild(errorMessage);
-                });
-        }
-
-
-        function handleLogout() {
-            fetch('/api/logout')
-                .then(() => {
-                    window.location.href = '/home';
-                })
-                .catch(() => {
-                    window.location.href = '/home';
-                });
-        }
-
     </script>
 </body>
 </html>

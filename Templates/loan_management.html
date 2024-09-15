@@ -176,6 +176,7 @@
             type: 'GET',
             url: '/api/get_all_loans',
             success: function(data) {
+                console.log(data);
                 $('.loading-spinner').hide();
                 if (!data.loan_requests_exists) {
                     $('#loan-requests-container').append(
@@ -185,9 +186,9 @@
                     $('#loan-requests-container').empty();
                     let hasLoans = false; // Flag to check if any loans are displayed
                     $.each(data.loans, function(index, value) {
-                        if (status && value.loan_status !== status) {
-                            return; // Skip non-matching status
-                        }
+                        // if (status && value.loan_status !== status) {
+                        //     return; // Skip non-matching status
+                        // }
                         hasLoans = true; // Set flag to true if loans are displayed
                         const statusIcon = getStatusIcon(value.loan_status);
                         $('#loan-requests-container').append(
@@ -205,11 +206,11 @@
                         );
                     });
 
-                    if (!hasLoans && status === 'pending') {
-                        $('#loan-requests-container').append(
-                            '<div class="no-loans-message">No pending loans found!</div>'
-                        );
-                    }
+                    // if (!hasLoans && status === 'pending') {
+                    //     $('#loan-requests-container').append(
+                    //         '<div class="no-loans-message">No pending loans found!</div>'
+                    //     );
+                    // }
 
                     $('.loan-request').click(function() {
                         const email = $(this).data('email');

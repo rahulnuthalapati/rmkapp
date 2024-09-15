@@ -15,8 +15,9 @@ def checkdb(cursor):
         dob DATE,
         aadharno BIGINT,
         bankaccno BIGINT,
-        bank VARCHAR(255),
+        bank ENUM("Chennai", "Tirupati", "Poonamalle"),
         profile_pic VARCHAR(255),
+        address VARCHAR(255),
         PRIMARY KEY (email, type),
         UNIQUE (email),
         UNIQUE (aadharno),
@@ -72,7 +73,7 @@ def checkdb(cursor):
         passbook_path VARCHAR(255),
         passport_path VARCHAR(255),
         loan_amount BIGINT,
-        loan_status enum('approved', 'rejected', 'pending', 'disbursed', 'verified'),
+        loan_status ENUM('approved', 'rejected', 'pending', 'disbursed', 'verified', 'completed'),
         FOREIGN KEY (email) REFERENCES users(email)
     )      
     """)

@@ -135,7 +135,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const loanId = localStorage.getItem('selectedLoanId');
+        let loanId = localStorage.getItem('selectedLoanId');
+        console.log('Loan ID:', loanId);
+        if(!loanId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            console.log('URL Params:', urlParams);
+            loanId = urlParams.get('loanId');
+        }
+        console.log('Loan ID:', loanId);
+
 
         if (loanId) {
             fetchPaymentHistory(loanId);

@@ -195,9 +195,33 @@ def profile_page():
 
 @app.route('/api/profileinfo', methods=['GET'])
 def profile_info(): 
-    profile_picture = current_user[9] if current_user[9] is not None else '/static/images/webpages/blank_profile.webp'
-    user_info = { "name": current_user[0], "phone": current_user[3], "dob": current_user[5].strftime('%Y-%m-%d') if current_user[5] else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
-    return jsonify(user_info)
+    global current_user
+    email = request.args.get('email') 
+
+    if email:  # If email is provided in query parameters, fetch that user's profile
+        try:
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user_details = cursor.fetchone()
+
+            if not user_details:
+                return jsonify({'error': 'User not found'}), 404
+
+            name = user_details[0]
+            profile_picture = user_details[9] if user_details[9] is not None else '/static/images/webpages/blank_profile.webp'
+
+            user_info = {
+                "name": name,
+                "profilePicPath": profile_picture
+            }
+
+            return jsonify(user_info)
+        except Exception as e:
+            print(f"Error fetching user details: {e}")
+            return jsonify({'error': 'Error fetching user details'}), 500
+    else:  # Otherwise, fetch the current user's profile
+        profile_picture = current_user[9] if current_user[9] is not None else '/static/images/webpages/blank_profile.webp'
+        user_info = { "name": current_user[0], "phone": current_user[3], "dob": current_user[5].strftime('%Y-%m-%d') if current_user[5] else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
+        return jsonify(user_info)
 
 @app.route('/api/get_user_role', methods=['GET'])
 def get_user_role():
@@ -286,7 +310,12 @@ def api_loan_information():
     global current_user
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
-    email = request.args.get('email') or current_user[1]
+    email = None
+    if request.args.get('email') is None or current_role == 'beneficiary':
+        email = current_user[1]
+    else:
+        email = request.args.get('email')
+    print("Email is: ", email)
     try:
         query = """
         SELECT * FROM user_loan
@@ -303,12 +332,12 @@ def api_loan_information():
         for loan_info in loan_infos:
             loan_id = loan_info[0]
 
-            # Check if payments exist for this loan_id
             payment_query = """
             SELECT 1 FROM loan_payments WHERE loan_id = %s LIMIT 1
             """
             cursor.execute(payment_query, (loan_id,))
             payment_exists = bool(cursor.fetchone())
+            # print("Payment exists: ", payment_exists)   
         
             loan_data.append({
                  "loan_id": loan_info[0],                  # Assuming loan_id is the first column
@@ -355,12 +384,18 @@ def economic_activities_page():
 
 @app.route('/api/economic_activity', methods=['GET', 'POST'])
 def manage_economic_activity():
+    global current_user
+    email = request.args.get('email') or current_user[1]
+    print("Email is: ", request.args.get('email'), email)
     if request.method == 'GET':
-        cursor.execute("SELECT * FROM user_business WHERE email = %s", (current_user[1], ))  # Replace with actual business name logic
-        result = cursor.fetchone()
-        if result is None:
-            return jsonify({'message': 'No data found for this user. Please add data first.'}), 200
-        return jsonify({
+        try:
+            cursor.execute("SELECT * FROM user_business WHERE email = %s", (email,))
+            result = cursor.fetchone()
+
+            if result is None:
+                return jsonify({'message': 'No data found for this user. Please add data first.'}), 200
+
+            return jsonify({
                 'type': result[3],
                 'name': result[1],
                 'address': result[2],
@@ -370,14 +405,16 @@ def manage_economic_activity():
                 'annual_expense': result[7],
                 'profit_margin': result[8]
             })
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     elif request.method == 'POST':
         data = request.get_json()
         try:
-            cursor.execute("SELECT * FROM user_business WHERE email = %s", (current_user[1],))
-            result = cursor.fetchone()
+            cursor.execute("SELECT 1 FROM user_business WHERE email = %s", (email,))
+            exists = cursor.fetchone()
 
-            if result:
+            if exists:
                 cursor.execute("""
                     UPDATE user_business SET
                         type = %s,
@@ -390,9 +427,9 @@ def manage_economic_activity():
                         profit_margin = %s
                     WHERE email = %s
                 """, (
-                    data['type'], data['name'], data['address'], data['monthly_revenue'], 
-                    data['annual_revenue'], data['monthly_expense'], data['annual_expense'], 
-                    data['profit_margin'], current_user[1]
+                    data['type'], data['name'], data['address'], data['monthly_revenue'],
+                    data['annual_revenue'], data['monthly_expense'], data['annual_expense'],
+                    data['profit_margin'], email
                 ))
             else:
                 cursor.execute("""
@@ -400,9 +437,9 @@ def manage_economic_activity():
                         monthly_expense, annual_expense, profit_margin, email)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    data['type'], data['name'], data['address'], data['monthly_revenue'], 
-                    data['annual_revenue'], data['monthly_expense'], data['annual_expense'], 
-                    data['profit_margin'], current_user[1]
+                    data['type'], data['name'], data['address'], data['monthly_revenue'],
+                    data['annual_revenue'], data['monthly_expense'], data['annual_expense'],
+                    data['profit_margin'], email
                 ))
 
             cnx.commit()
@@ -411,49 +448,6 @@ def manage_economic_activity():
         except Exception as e:
             cnx.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-
-    if request.method == 'GET':
-        # Fetch business details from the `user_business` table
-        cursor.execute("SELECT * FROM user_business WHERE name = %s", ('Business Name',))  # Replace with actual business name logic
-        result = cursor.fetchone()
-        if result:
-            return jsonify({
-                'type': result['type'],
-                'name': result['name'],
-                'address': result['address'],
-                'monthly_revenue': result['monthly_revenue'],
-                'annual_revenue': result['annual_revenue'],
-                'monthly_expense': result['monthly_expense'],
-                'annual_expense': result['annual_expense'],
-                'profit_margin': result['profit_margin']
-            })
-        else:
-            return jsonify({'error': 'No business found'}), 404
-
-    elif request.method == 'POST':
-        data = request.get_json()
-        try:
-            cursor.execute("""
-                UPDATE user_business SET
-                    type = %s,
-                    name = %s,
-                    address = %s,
-                    monthly_revenue = %s,
-                    annual_revenue = %s,
-                    monthly_expense = %s,
-                    annual_expense = %s,
-                    profit_margin = %s
-                WHERE email = %s
-            """, (
-                data['type'], data['name'], data['address'], data['monthly_revenue'], 
-                data['annual_revenue'], data['monthly_expense'], data['annual_expense'], 
-                data['profit_margin'], current_user[1]
-            ))
-            cnx.commit()
-            return jsonify({'success': True})
-        except Exception as e:
-            cnx.rollback()
-            return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/income_savings_page')
 def income_savings_page():
@@ -465,7 +459,11 @@ def income_savings():
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
     
-    email = current_user[1]
+    email = None
+    if request.args.get('email') is None or current_role == 'beneficiary':
+        email = current_user[1]
+    else:
+        email = request.args.get('email')
     if request.method == 'GET':
         try:
             cursor.execute("SELECT * FROM user_income_savings WHERE email = %s", (email,))
@@ -492,12 +490,10 @@ def income_savings():
         try:
             data = request.get_json()
 
-            # Check if data exists, if not, insert, otherwise update
             cursor.execute("SELECT 1 FROM user_income_savings WHERE email = %s", (email,))
             exists = cursor.fetchone()
 
             if exists:
-                # Update existing data
                 update_query = """
                 UPDATE user_income_savings SET 
                     monthly_income = %s,
@@ -597,10 +593,6 @@ def notifications_page():
 def loan_requests():
     return render_template('loan_requests.html')
 
-@app.route('/system_settings')
-def system_settings():
-    return render_template('system_settings.html')
-
 @app.route('/beneficiary_profiles_page')
 def beneficiary_profiles_page():
     return render_template('beneficiary_profiles.html')
@@ -662,7 +654,8 @@ def get_all_loans():
         result = cu.get_all_loans(cursor)
 
         print("Result: ", result)
-        if not result:
+        if result is None:
+            print(jsonify({"loan_requests_exists": False}))
             return jsonify({"loan_requests_exists": False})
 
         loan_requests = []
@@ -672,8 +665,10 @@ def get_all_loans():
                 'email': row[1],
                 'loan_amount': row[6],
                 'loan_status': row[7],
-                'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  # Default image if path is None
+                'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  
             })
+
+        print("Loan Requests: ", loan_requests)
 
         print(jsonify({
             "loan_requests_exists": True,
@@ -688,8 +683,6 @@ def get_all_loans():
     except Exception as e:
         print(f"Error fetching user loan requests: {e}")
         return jsonify({"error": "Error fetching user loan requests"}), 500
-
-    return jsonify(loans)
 
 @app.route('/loan_details_page')
 def loan_details_page():
@@ -730,6 +723,81 @@ def record_payment():
         print(f"Error recording payment: {e}")
         cnx.rollback()
         return jsonify({'error': 'Error recording payment'}), 500
+
+@app.route('/system_settings')
+def system_settings():
+    return render_template('system_settings.html')
+
+@app.route('/edit_profile_page')
+def edit_profile_page():
+    return render_template('edit_profile_page.html')
+
+@app.route('/change_password_page')
+def change_password_page():
+    return render_template('change_password_page.html')
+
+@app.route('/api/profile', methods=['GET', 'POST'])
+def profile_api():
+    global current_user
+    if request.method == 'GET':
+        try:
+            cursor.execute("SELECT * FROM users WHERE email = %s", (current_user[1],))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                return jsonify({
+                    'name': user_data[0],
+                    'bank': user_data[8],
+                    'address': user_data[10]
+                }), 200
+            else:
+                return jsonify({'error': 'User not found'}), 404
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    elif request.method == 'POST':
+        try:
+            name = request.form.get('name')
+            bank = request.form.get('bank')
+            address = request.form.get('address')
+
+            # Update user data in the database
+            cursor.execute("""
+                UPDATE users
+                SET name = %s, bank = %s, address = %s
+                WHERE email = %s
+            """, (name, bank, address, current_user[1]))
+            cnx.commit()
+
+            return jsonify({'success': True}), 200
+        except Exception as e:
+            print(f"Error updating user profile: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/change_password', methods=['POST'])
+def change_password_api():
+    global current_user
+    data = request.get_json()
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    if not current_password or not new_password:
+        return jsonify({'success': False, 'error': 'Missing current or new password'}), 400
+
+    try:
+        # Check if the current password matches
+        cursor.execute("SELECT password FROM users WHERE email = %s", (current_user[1],))
+        actual_password = cursor.fetchone()
+
+        if not actual_password or actual_password[0] != current_password:
+            return jsonify({'success': False, 'error': 'Incorrect current password'}), 401
+
+        # Update the password
+        cursor.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, current_user[1]))
+        cnx.commit()
+
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

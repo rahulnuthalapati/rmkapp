@@ -167,7 +167,9 @@
             }
         }
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('/api/economic_activity')
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+            fetch(`/api/economic_activity${email ? `?email=${encodeURIComponent(email)}` : ''}`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('type').value = data.type || 'No data';
