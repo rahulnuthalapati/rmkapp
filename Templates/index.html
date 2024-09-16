@@ -119,5 +119,13 @@
             </form>
         </div>
     </div>
+    <script>
+        let headers = new Headers();
+        headers.set("ngrok-skip-browser-warning", true);
+
+        fetch('https://your-ngrok-url.ngrok-free.app', { headers })
+        .then(response => response.text())
+        .then(data => console.log(data));
+    </script>
 </body>
 </html>

@@ -6,6 +6,8 @@ from datetime import datetime
 import os
 import json
 from werkzeug.utils import secure_filename
+import requests
+
 
 cnx = mysql.connector.connect(user='root', password='')
 
@@ -16,6 +18,7 @@ app = Flask(__name__, static_folder='static')
 
 current_role = None
 current_user = None
+
 
 # @app.before_request
 # def filter():
@@ -29,10 +32,26 @@ current_user = None
         
 @app.route('/')
 def index():
+    url = 'https://your-ngrok-url.ngrok-free.app'  # Replace with your ngrok URL
+    headers = {
+        'ngrok-skip-browser-warning': 'true'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    print(response.text)
     return render_template('index.html')
 
 @app.route('/home')
 def home_page():
+    url = 'https://your-ngrok-url.ngrok-free.app'  # Replace with your ngrok URL
+    headers = {
+        'ngrok-skip-browser-warning': 'true'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    print(response.text)
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -801,4 +820,4 @@ def change_password_api():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
