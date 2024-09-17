@@ -156,6 +156,7 @@ def get_user_loan_requests():
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
     email = current_user[1] if current_role == 'beneficiary' else request.args.get('email')
+    print("fetching loan details for user", email)
     try:
         # Fetch loan requests for the current user
         # Assuming current_user[1] contains the email
