@@ -3,7 +3,18 @@ def checkdb(cursor):
     cursor.execute("CREATE DATABASE IF NOT EXISTS rmkdb")
     cursor.execute("USE rmkdb")
     # cursor.execute("DROP TABLE IF EXISTS loan_payments")
-
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        message_id INT AUTO_INCREMENT PRIMARY KEY,
+        sender_email VARCHAR(255),
+        receiver_email VARCHAR(255),
+        message_text TEXT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_read BOOLEAN DEFAULT 0,
+        FOREIGN KEY (sender_email) REFERENCES users(email),
+        FOREIGN KEY (receiver_email) REFERENCES users(email)
+    )
+    """)
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (

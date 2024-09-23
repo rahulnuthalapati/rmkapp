@@ -819,6 +819,124 @@ def change_password_api():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/chat_page')
+def chat_page():
+    global current_user
+    global current_role
+    if current_user is None:
+        return redirect(url_for('home_page'))  # Redirect if not logged in
+    return render_template('chat.html', current_user=current_user, current_role=current_role)
+
+@app.route('/api/get_users_for_chat', methods=['GET'])
+def get_users_for_chat():
+    global current_user
+    global current_role
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    try:
+        if current_role == 'organizer':
+            cursor.execute("SELECT email, name, profile_pic FROM users WHERE type = 'beneficiary'")
+        elif current_role == 'beneficiary':
+            cursor.execute("SELECT email, name, profile_pic FROM users WHERE type = 'organizer'")
+        else:  # current_role is'manager' or any other unexpected role
+            return jsonify({'error': 'Chat is not available for this user role'}), 403 # Forbidden
+ 
+        users = []
+        all_rows = cursor.fetchall() # Fetch all rows first
+
+        for row in all_rows:
+            profile_pic = row[2] if row[2] is not None else '/static/images/webpages/blank_profile.webp'
+            users.append({'email': row[0], 'name': row[1], 'profilePicPath': profile_pic, 'has_unread_messages': False})
+
+        if current_user:
+            cursor.execute("""
+                SELECT DISTINCT sender_email 
+                FROM chat_messages
+                WHERE receiver_email = %s AND is_read = FALSE
+            """, (current_user[1],))
+            senders_with_unread_messages = [row[0] for row in cursor.fetchall()]
+
+            # Update users with unread messages
+            for user in users:
+                if user['email'] in senders_with_unread_messages:
+                    user['has_unread_messages'] = True
+        
+        print(users)
+        return jsonify(users), 200
+
+    except Exception as e:
+        print(f"Error fetching users for chat: {e}")
+        return jsonify({'error': 'Failed to fetch users'}), 500
+
+@app.route('/api/send_message', methods=['POST'])
+def send_message():
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    data = request.get_json()
+    receiver_email = data.get('receiver_email')
+    message_text = data.get('message_text')
+
+    if not receiver_email or not message_text:
+        return jsonify({'error': 'Missing receiver email or message text'}), 400
+
+    try:
+        cursor.execute("""
+            INSERT INTO chat_messages (sender_email, receiver_email, message_text, is_read)
+            VALUES (%s, %s, %s, %s)
+        """, (current_user[1], receiver_email, message_text, False))
+        cnx.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        print(f"Error sending message: {e}")
+        return jsonify({'error': 'Failed to send message'}), 500
+
+@app.route('/api/get_messages/<receiver_email>', methods=['GET'])
+def get_messages(receiver_email):
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+    try:
+        temp = cursor.fetchall()  # Or cursor.fetchone() if you expect only one row
+        # Get messages between the current user and the specified receiver
+        cursor.execute("""
+            SELECT sender_email, message_text, timestamp 
+            FROM chat_messages
+            WHERE (sender_email = %s AND receiver_email = %s)
+               OR (sender_email = %s AND receiver_email = %s)
+            ORDER BY timestamp
+        """, (current_user[1], receiver_email, receiver_email, current_user[1]))
+
+        messages = [{'sender': row[0], 'message': row[1], 'timestamp': row[2]} for row in cursor.fetchall()]
+        return jsonify(messages), 200
+    except Exception as e:
+        print(f"Error fetching messages: {e}")
+        return jsonify({'error': 'Failed to fetch messages'}), 500
+
+@app.route('/api/mark_messages_read/<sender_email>', methods=['POST'])
+def mark_messages_read(sender_email):
+    global current_user
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    try:
+        new_connection = mysql.connector.connect(user='root', password='')
+        # new_cursor = new_connection.cursor()
+        with new_connection.cursor() as new_cursor:
+            dbop.checkdb(new_cursor) 
+            # Now execute the UPDATE query
+            new_cursor.execute("""
+                UPDATE chat_messages
+                SET is_read = TRUE
+                WHERE sender_email = %s AND receiver_email = %s AND is_read = FALSE
+            """, (sender_email, current_user[1]))
+            new_connection.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        print(f"Error marking messages as read: {e}")
+        return jsonify({'error': 'Failed to mark messages as read'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

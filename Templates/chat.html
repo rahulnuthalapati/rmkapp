@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        .chat-container {
+            display: flex;
+            width: 80%;
+            height: 80%;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Hide content that overflows */
+        }
+
+        .user-list {
+            width: 30%;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            transition: transform 0.3s ease-in-out; /* Add transition for smooth sliding */
+        }
+
+        .user-list ul { /* Remove bullet points from the user list */
+            list-style: none; 
+            padding: 0; 
+        }
+
+        .user-list h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .user {
+            display: flex; /* Use flexbox for user item layout */
+            align-items: center; 
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .user img { /* Style for profile pictures */
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .back-button { 
+            display: none; 
+        }
+
+        .user.active {
+            background-color: #f0f0f0;
+        }
+
+        .chat-box {
+            width: 70%;
+            padding: 20px;
+        }
+
+        .chat-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message.sent {
+            background-color: #dcf8c6;
+            text-align: right;
+        }
+
+        .message.received {
+            background-color: #eee;
+        }
+
+        .message .timestamp {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .input-area input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .input-area button {
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) { 
+            .chat-container {
+                flex-direction: column;
+                width: 95%;
+                height: 90%; 
+            }
+
+            .user-list {
+                width: 100%; 
+                border-right: none; 
+                border-bottom: 1px solid #ddd;
+                height: 100%; /* Initially take up full height */
+                position: relative; /* To allow absolute positioning for back button */
+            }
+
+            .chat-box {
+                width: 100%; 
+                height: 100%; 
+                transform: translateX(100%); /* Initially hidden off-screen to the right */
+                transition: transform 0.3s ease-in-out; /* Add transition for smooth sliding */
+            }
+
+            .chat-box.show {
+                transform: translateX(0%); /* Slide into view when 'show' class is added */
+            }
+
+            /* Back Button for Mobile */
+            .back-button {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                background-color: #4a4a4a;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                z-index: 2; /* Make sure it's above the user list */
+                display: none; /* Initially hidden */
+            }
+            .back-button i {
+                margin-right: 5px;
+            }
+
+            .chat-box.show + .user-list .back-button {
+                display: block; /* Show back button when chat box is visible */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="user-list">
+            <h3>Available Users</h3>
+            <ul id="users"></ul>
+            <button class="back-button" onclick="showUserList()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button> 
+        </div>
+
+        <div class="chat-box">
+            <h3 id="chat-title"></h3>
+            <div class="messages" id="messages"></div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const usersList = document.getElementById('users');
+        const messagesContainer = document.getElementById('messages');
+        const chatTitle = document.getElementById('chat-title');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+
+        let selectedUserEmail = null; // Email of the user currently being chatted with
+
+        // Fetch available users for chat
+        fetch('/api/get_users_for_chat')
+            .then(response => response.json())
+            .then(users => {
+                console.log('Available users:', users);
+                users.forEach(user => {
+                    const userElement = document.createElement('li');
+                    userElement.classList.add('user');
+                    userElement.dataset.email = user.email;
+
+                    const profilePic = document.createElement('img');
+                    profilePic.src = user.profilePicPath;
+                    profilePic.alt = `${user.name}'s profile picture`;
+                    
+                    const userNameSpan = document.createElement('span'); // Create a span for the user's name
+                    userNameSpan.textContent = user.name;
+
+                    userElement.appendChild(profilePic); 
+                    userElement.appendChild(userNameSpan);
+
+                    if (user.has_unread_messages) {
+                        console.log('User has unread messages:', user.email);
+                        const unreadMark = document.createElement('span');
+                        unreadMark.textContent = '●'; // Dot symbol
+                        unreadMark.style.color = 'red'; // Color for unread indicator
+                        unreadMark.style.marginLeft = '10px'; // Adjust positioning
+                        userElement.appendChild(unreadMark);
+                    }
+                    userElement.addEventListener('click', () => {
+                        // Clear the active class from any previously selected user
+                        const activeUsers = document.querySelectorAll('.user.active');
+                        activeUsers.forEach(activeUser => activeUser.classList.remove('active'));
+
+                        // Add the active class to the clicked user
+                        userElement.classList.add('active');
+
+                        selectedUserEmail = user.email;
+                        chatTitle.textContent = `Chat with ${user.name}`;
+                        loadMessages(user.email);
+                        if (user.has_unread_messages) {
+                            markMessagesRead(user.email); 
+                        }
+                    });
+
+                    usersList.appendChild(userElement);
+                });
+            })
+            .catch(error => console.error('Error fetching users:', error));
+
+        // Function to load messages for the selected user
+        function loadMessages(receiverEmail) {
+            fetch(`/api/get_messages/${receiverEmail}`)
+                .then(response => response.json())
+                .then(messages => {
+                    messagesContainer.innerHTML = ''; 
+                    messages.forEach(message => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.classList.add(message.sender === '{{ current_user[1] }}' ? 'sent' : 'received');
+
+                        messageElement.innerHTML = `
+                            <p>${message.message}</p>
+                            <span class="timestamp">${formatTimestamp(message.timestamp)}</span>
+                        `;
+
+                        messagesContainer.appendChild(messageElement);
+                    });
+
+                    // Auto-scroll to the bottom of the messages container
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                })
+                .catch(error => console.error('Error loading messages:', error));
+        }
+
+        // Function to format the timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // Event listener for sending messages
+        sendButton.addEventListener('click', () => {
+            const messageText = messageInput.value.trim();
+            if (messageText && selectedUserEmail) {
+                sendMessage(selectedUserEmail, messageText);
+            }
+        });
+
+        // Function to send a message to the server
+        function sendMessage(receiverEmail, messageText) {
+            fetch('/api/send_message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiver_email: receiverEmail, message_text: messageText })
+            })
+            .then(response => {
+                if (response.ok) {
+                    messageInput.value = ''; // Clear the input field
+                    loadMessages(receiverEmail); // Reload messages to show the new message
+                } else {
+                    console.error('Error sending message:', response.status);
+                    // Handle error (e.g., display an error message to the user)
+                }
+            })
+            .catch(error => console.error('Error sending message:', error));
+        }
+
+        function showChatBox(email, name) {
+            selectedUserEmail = email;
+            chatTitle.textContent = `Chat with ${name}`;
+            loadMessages(email);
+            
+            const chatBox = document.querySelector('.chat-box');
+            chatBox.classList.add('show'); 
+
+            const userList = document.querySelector('.user-list');
+            userList.style.transform = 'translateX(-100%)'; 
+        }
+
+        function showUserList() {
+            const userList = document.querySelector('.user-list');
+            userList.style.transform = 'translateX(100%)'; // Corrected to translateX(100%)
+
+            const chatBox = document.querySelector('.chat-box');
+            chatBox.classList.remove('show'); 
+        }
+
+        function markMessagesRead(senderEmail) {
+            fetch(`/api/mark_messages_read/${senderEmail}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error marking messages as read:', response.status);
+                }
+            })
+            .catch(error => console.error('Error marking messages as read:', error));
+        }
+    </script>
+</body>
+</html>

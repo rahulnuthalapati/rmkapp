@@ -5,7 +5,7 @@
     <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
         Apache Cordova Team
     </author>
-    <content src="https://remarkably-settled-tapir.ngrok-free.app" />
+    <content src="localhost:5000" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 </widget>

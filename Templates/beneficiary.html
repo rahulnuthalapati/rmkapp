@@ -224,6 +224,10 @@
                     <i class="fas fa-comment-alt"></i>
                     Feedback and Surveys
                 </button>
+                <button type="button" onclick="handleButtonClick('chat')">
+                    <i class="fas fa-comments"></i>
+                    Chat with Organizers
+                </button>
                 <button type="button" onclick="handleButtonClick('manage_profile')">
                     <i class="fas fa-user-cog"></i>
                     Manage Profile
@@ -257,7 +261,8 @@
             economic_activity: "{{ url_for('economic_activities_page') }}",
             income_and_savings: "{{ url_for('income_savings_page') }}",
             feedback_and_surveys: "{{ url_for('feedback_page') }}",
-            notifications: "{{ url_for('notifications_page') }}"
+            notifications: "{{ url_for('notifications_page') }}",
+            chat: "{{ url_for('chat_page') }}"
         };
 
         function handleButtonClick(value) {

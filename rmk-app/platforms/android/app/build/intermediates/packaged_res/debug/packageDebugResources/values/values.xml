@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="cdv_splashscreen_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#F8F8F8</color>
     <string name="activity_name">@string/launcher_name</string>
     <string name="app_name">Mahila</string>
     <string name="launcher_name">@string/app_name</string>

@@ -43,9 +43,9 @@ def do_login(request_object, cur, user_type):
         return False 
     
     cur.execute(query, (email, password, user_type))
-    # print(cur.fetchone())
+    result = cur.fetchone()  # Or cur.fetchall() if you expect multiple rows
 
-    if cur.fetchone():
+    if result:
         print("Login successful")
         return True
     else:
