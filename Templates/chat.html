@@ -45,7 +45,7 @@
         }
 
         .user {
-            display: flex; /* Use flexbox for user item layout */
+            display: flex; 
             align-items: center; 
             padding: 10px;
             border-bottom: 1px solid #eee;
@@ -126,52 +126,67 @@
             margin-left: 10px;
         }
 
-        @media (max-width: 768px) { 
+        @media (max-width: 768px) {
             .chat-container {
                 flex-direction: column;
                 width: 95%;
-                height: 90%; 
+                height: 90vh;
             }
 
             .user-list {
-                width: 100%; 
-                border-right: none; 
+                width: 100%;
+                border-right: none;
                 border-bottom: 1px solid #ddd;
-                height: 100%; /* Initially take up full height */
-                position: relative; /* To allow absolute positioning for back button */
+                height: 100vh;
+                position: relative;
+                transform: translateX(0%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .user-list.hidden {
+                /* height: 0;
+                overflow: hidden;
+                transform: translateX(-100%);
+                 */
+                display: none;
             }
 
             .chat-box {
-                width: 100%; 
-                height: 100%; 
-                transform: translateX(100%); /* Initially hidden off-screen to the right */
-                transition: transform 0.3s ease-in-out; /* Add transition for smooth sliding */
+                position: relative;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .chat-box.hidden {
+                display: none;
+            }
+
+            .messages {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding: 10px;
+            }
+
+            .input-area {
+                padding: 10px;
+                border-top: 1px solid #ddd;
             }
 
             .chat-box.show {
-                transform: translateX(0%); /* Slide into view when 'show' class is added */
+                transform: translateX(0%);
             }
 
-            /* Back Button for Mobile */
             .back-button {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                padding: 8px 12px;
+                padding: 10px;
                 background-color: #4a4a4a;
                 color: white;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
-                z-index: 2; /* Make sure it's above the user list */
-                display: none; /* Initially hidden */
-            }
-            .back-button i {
-                margin-right: 5px;
-            }
-
-            .chat-box.show + .user-list .back-button {
-                display: block; /* Show back button when chat box is visible */
+                margin: 0;
             }
         }
 
@@ -182,13 +197,13 @@
         <div class="user-list">
             <h3>Available Users</h3>
             <ul id="users"></ul>
-            <button class="back-button" onclick="showUserList()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button> 
         </div>
 
         <div class="chat-box">
             <h3 id="chat-title"></h3>
+            <button class="back-button" onclick="showUserList()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button> 
             <div class="messages" id="messages"></div>
             <div class="input-area">
                 <input type="text" id="message-input" placeholder="Type your message...">
@@ -235,6 +250,8 @@
                         userElement.appendChild(unreadMark);
                     }
                     userElement.addEventListener('click', () => {
+                        showChatBox(user.email, user.name);
+                        history.pushState({ page: 'chat' }, 'Chat');
                         // Clear the active class from any previously selected user
                         const activeUsers = document.querySelectorAll('.user.active');
                         activeUsers.forEach(activeUser => activeUser.classList.remove('active'));
@@ -315,24 +332,40 @@
         }
 
         function showChatBox(email, name) {
+            const chatBox = document.querySelector('.chat-box');
+            chatBox.classList.remove('hidden');
             selectedUserEmail = email;
             chatTitle.textContent = `Chat with ${name}`;
             loadMessages(email);
-            
-            const chatBox = document.querySelector('.chat-box');
-            chatBox.classList.add('show'); 
 
             const userList = document.querySelector('.user-list');
-            userList.style.transform = 'translateX(-100%)'; 
+            userList.classList.add('hidden');
+            chatBox.classList.add('show');
         }
 
         function showUserList() {
             const userList = document.querySelector('.user-list');
-            userList.style.transform = 'translateX(100%)'; // Corrected to translateX(100%)
+            userList.classList.remove('hidden');
 
             const chatBox = document.querySelector('.chat-box');
-            chatBox.classList.remove('show'); 
+            chatBox.classList.remove('show');
         }
+
+        document.querySelector('.back-button').addEventListener('click', showUserList);
+        window.addEventListener('popstate', () => {
+            if (window.history.state && window.history.state.page === 'chat') {
+                const chatBox = document.querySelector('.chat-box');
+                chatBox.classList.add('hidden');
+                const userList = document.querySelector('.user-list');
+                userList.classList.remove('hidden');
+                userList.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('user')) {
+                        showChatBox(e.target.dataset.email, e.target.querySelector('span').textContent);
+                    }
+                });
+            }
+        });
+
 
         function markMessagesRead(senderEmail) {
             fetch(`/api/mark_messages_read/${senderEmail}`, {
@@ -370,6 +403,11 @@
             })
             .catch(error => console.error('Error updating unread status:', error));
         }
+        messageInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click(); // Trigger the send button's click event
+            }
+        });
         // function refreshChat() {
 
         //     if (selectedUserEmail) { 

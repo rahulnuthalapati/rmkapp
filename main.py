@@ -41,7 +41,7 @@ def index():
     response = requests.get(url, headers=headers)
 
     # print(response.text)
-    return render_template('index.html')
+    return render_template('landing.html')
 
 @app.route('/home')
 def home_page():
@@ -52,7 +52,7 @@ def home_page():
 
     response = requests.get(url, headers=headers)
 
-    print(response.text)
+    # print(response.text)
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -995,6 +995,10 @@ def check_unread_messages(sender_email):
     except Exception as e:
         print(f"Error checking for unread messages: {e}")
         return jsonify({'error': 'Failed to check unread messages'}), 500
+
+@app.route('/landing')
+def landing_page():
+    return render_template('landing.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
