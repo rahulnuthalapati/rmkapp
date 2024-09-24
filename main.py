@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, render_template, jsonify
+from flask import Flask, request, redirect, url_for, render_template, jsonify, session
 import mysql.connector
 import databaseop as dbop
 import common_util as cu
@@ -15,9 +15,10 @@ cursor = cnx.cursor()
 dbop.checkdb(cursor)
 
 app = Flask(__name__, static_folder='static')
+app.secret_key = 'Your_Very_Long_Random_Secret_Key_Here'
 
-current_role = None
-current_user = None
+# current_role = None
+# current_user = None
 
 
 # @app.before_request
@@ -39,7 +40,7 @@ def index():
 
     response = requests.get(url, headers=headers)
 
-    print(response.text)
+    # print(response.text)
     return render_template('index.html')
 
 @app.route('/home')
@@ -56,21 +57,20 @@ def home_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    global current_role
     if request.form.get('role') is not None:
-        current_role = request.form.get('role')
-    return render_template('login.html', role=current_role)
+        session['role'] = request.form.get('role')
+    return render_template('login.html', role=session.get('role'))
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    global current_role
+    current_role = session.get('role')
     if current_role is None:
         return "Please select role from homepage, redirecting in 3 seconds...", 401
-    global current_user
+    # global current_user
     success = cu.do_login(request, cursor, current_role)
     if not success:
        return "Invalid credentials, please try again.", 401
-    current_user = cu.get_user_details(request.form.get('email'), cursor, current_role)
+    session['user'] = cu.get_user_details(request.form.get('email'), cursor, current_role)
     if current_role == 'beneficiary':
         return url_for('beneficiary_page')
     elif current_role == 'manager':
@@ -82,11 +82,12 @@ def login():
 
 @app.route('/signup')
 def signup_page():
-    return render_template('signup.html', role=current_role)
+    return render_template('signup.html', role=session.get('role'))
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
-    global current_role
+    # global current_role
+    current_role = session.get('role')
     if current_role is None:
         return "Please select role from homepage", 401
     print("signup for", request.form.get('email'), "is in progress...")
@@ -99,8 +100,10 @@ def signup():
 
 @app.route('/beneficiary', methods=['GET', 'POST'])
 def beneficiary_page():
-    global current_user
-    global current_role
+    # global current_user
+    # global current_role
+    current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None or current_role != 'beneficiary':
         current_role = 'beneficiary'
         return redirect(url_for('login_page'))
@@ -123,8 +126,10 @@ def beneficiary_link_page():
 
 @app.route('/manager')
 def manager_page():
-    global current_user
-    global current_role
+    # global current_user
+    # global current_role
+    current_role = session.get('role')
+    current_user = session.get('user')
     if current_user is None or current_role != 'manager':
         current_role = 'manager'
         return redirect(url_for('login_page'))
@@ -132,8 +137,10 @@ def manager_page():
 
 @app.route('/organizer')
 def organizer_page():
-    global current_user
-    global current_role
+    # global current_user
+    # global current_role
+    current_role = session.get('role')
+    current_user = session.get('user')
     if current_user is None or current_role != 'organizer':
         current_role = 'organizer'
         return redirect(url_for('login_page'))
@@ -145,6 +152,8 @@ def loan_application_page():
 
 @app.route('/api/loanapplication', methods=['POST'])
 def loan_application():
+    current_role = session.get('role')
+    current_user = session.get('user')
     cu.loan_application(request, cursor, current_role, current_user)
     cnx.commit()
     return jsonify({'message': 'Loan application submitted, redirecting in 3 seconds...', 'redirect': '/beneficiary'}), 200
@@ -152,7 +161,9 @@ def loan_application():
 
 @app.route('/api/user_loan', methods=['GET'])
 def get_user_loan_requests():
-    global current_user
+    # global current_user
+    current_role = session.get('role')
+    current_user = session.get('user')
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
     email = current_user[1] if current_role == 'beneficiary' else request.args.get('email')
@@ -215,7 +226,9 @@ def profile_page():
 
 @app.route('/api/profileinfo', methods=['GET'])
 def profile_info(): 
-    global current_user
+    # global current_user
+    current_user = session.get('user')
+    print("Current user: ", current_user)
     email = request.args.get('email') 
 
     if email:  # If email is provided in query parameters, fetch that user's profile
@@ -240,12 +253,15 @@ def profile_info():
             return jsonify({'error': 'Error fetching user details'}), 500
     else:  # Otherwise, fetch the current user's profile
         profile_picture = current_user[9] if current_user[9] is not None else '/static/images/webpages/blank_profile.webp'
-        user_info = { "name": current_user[0], "phone": current_user[3], "dob": current_user[5].strftime('%Y-%m-%d') if current_user[5] else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
+        dob_str = current_user[5]
+        dob_datetime = datetime.strptime(current_user[5], '%a, %d %b %Y %H:%M:%S %Z') if current_user[5] else None
+        user_info = { "name": current_user[0], "phone": current_user[3], "dob": dob_datetime.strftime('%Y-%m-%d') if dob_datetime else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
         return jsonify(user_info)
 
 @app.route('/api/get_user_role', methods=['GET'])
 def get_user_role():
-    global current_role 
+    # global current_role 
+    current_role = session.get('role')
     if current_role == 'organizer': 
         return jsonify({'is_manager': True}), 200
     else:
@@ -253,7 +269,9 @@ def get_user_role():
 
 @app.route('/api/update_profile', methods=['POST'])
 def update_profile():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
+    current_role = session.get('role')
     try:
         data = json.loads(request.form.get('profileData'))
         name = data.get('name')
@@ -327,7 +345,9 @@ def loan_payment_page():
 
 @app.route('/api/loan_information', methods=['GET'])
 def api_loan_information():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None:
         return jsonify({'error': 'No current user'}), 400
     email = None
@@ -404,7 +424,8 @@ def economic_activities_page():
 
 @app.route('/api/economic_activity', methods=['GET', 'POST'])
 def manage_economic_activity():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     email = request.args.get('email') or current_user[1]
     print("Email is: ", request.args.get('email'), email)
     if request.method == 'GET':
@@ -475,7 +496,9 @@ def income_savings_page():
 
 @app.route('/api/income_savings', methods=['GET', 'POST'])
 def income_savings():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
     
@@ -557,7 +580,8 @@ def feedback_page():
 
 @app.route('/api/feedback', methods=['GET', 'POST'])
 def api_feedback():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
     
@@ -710,10 +734,11 @@ def loan_details_page():
 
 @app.route('/api/logout', methods=['GET'])
 def logout():
-    global current_user
-    current_user = None
-    global current_role
-    current_role = None
+    # global current_user
+    # current_user = None
+    # global current_role
+    # current_role = None
+    session.clear()
     return redirect('/home')
 
 @app.route('/record_payment_page', methods=['GET']) 
@@ -758,7 +783,8 @@ def change_password_page():
 
 @app.route('/api/profile', methods=['GET', 'POST'])
 def profile_api():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     if request.method == 'GET':
         try:
             cursor.execute("SELECT * FROM users WHERE email = %s", (current_user[1],))
@@ -795,7 +821,8 @@ def profile_api():
 
 @app.route('/api/change_password', methods=['POST'])
 def change_password_api():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     data = request.get_json()
     current_password = data.get('current_password')
     new_password = data.get('new_password')
@@ -821,16 +848,20 @@ def change_password_api():
 
 @app.route('/chat_page')
 def chat_page():
-    global current_user
-    global current_role
+    # global current_user
+    # global current_role
+    current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None:
         return redirect(url_for('home_page'))  # Redirect if not logged in
     return render_template('chat.html', current_user=current_user, current_role=current_role)
 
 @app.route('/api/get_users_for_chat', methods=['GET'])
 def get_users_for_chat():
-    global current_user
-    global current_role
+    # global current_user
+    # global current_role
+    current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
 
@@ -871,7 +902,8 @@ def get_users_for_chat():
 
 @app.route('/api/send_message', methods=['POST'])
 def send_message():
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
 
@@ -895,7 +927,8 @@ def send_message():
 
 @app.route('/api/get_messages/<receiver_email>', methods=['GET'])
 def get_messages(receiver_email):
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
     try:
@@ -910,6 +943,8 @@ def get_messages(receiver_email):
         """, (current_user[1], receiver_email, receiver_email, current_user[1]))
 
         messages = [{'sender': row[0], 'message': row[1], 'timestamp': row[2]} for row in cursor.fetchall()]
+
+        # print(messages)
         return jsonify(messages), 200
     except Exception as e:
         print(f"Error fetching messages: {e}")
@@ -917,7 +952,8 @@ def get_messages(receiver_email):
 
 @app.route('/api/mark_messages_read/<sender_email>', methods=['POST'])
 def mark_messages_read(sender_email):
-    global current_user
+    # global current_user
+    current_user = session.get('user')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
 
@@ -925,7 +961,7 @@ def mark_messages_read(sender_email):
         new_connection = mysql.connector.connect(user='root', password='')
         # new_cursor = new_connection.cursor()
         with new_connection.cursor() as new_cursor:
-            dbop.checkdb(new_cursor) 
+            new_cursor.execute("USE rmkdb")
             # Now execute the UPDATE query
             new_cursor.execute("""
                 UPDATE chat_messages
@@ -938,5 +974,27 @@ def mark_messages_read(sender_email):
         print(f"Error marking messages as read: {e}")
         return jsonify({'error': 'Failed to mark messages as read'}), 500
 
+@app.route('/api/check_unread_messages/<sender_email>', methods=['GET'])
+def check_unread_messages(sender_email):
+    # global current_user
+    current_user = session.get('user')
+    if current_user is None:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    try:
+        new_connection = mysql.connector.connect(user='root', password='')
+        # new_cursor = new_connection.cursor()
+        with new_connection.cursor() as new_cursor:
+            new_cursor.execute("USE rmkdb")
+            new_cursor.execute("""
+                SELECT 1 FROM chat_messages
+                WHERE sender_email = %s AND receiver_email = %s AND is_read = FALSE
+            """, (sender_email, current_user[1]))
+            has_unread_messages = bool(new_cursor.fetchone())
+        return jsonify({'has_unread_messages': has_unread_messages}), 200
+    except Exception as e:
+        print(f"Error checking for unread messages: {e}")
+        return jsonify({'error': 'Failed to check unread messages'}), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)

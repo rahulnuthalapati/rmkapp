@@ -245,9 +245,8 @@
                         selectedUserEmail = user.email;
                         chatTitle.textContent = `Chat with ${user.name}`;
                         loadMessages(user.email);
-                        if (user.has_unread_messages) {
-                            markMessagesRead(user.email); 
-                        }
+                        updateUnreadStatus(user.email); // Call the function to refresh unread status
+                        markMessagesRead(user.email); 
                     });
 
                     usersList.appendChild(userElement);
@@ -346,6 +345,40 @@
             })
             .catch(error => console.error('Error marking messages as read:', error));
         }
+
+        function updateUnreadStatus(senderEmail) {
+        fetch(`/api/check_unread_messages/${senderEmail}`)
+            .then(response => response.json())
+            .then(data => {
+                const userElement = document.querySelector(`.user[data-email="${senderEmail}"]`); 
+                const unreadMark = userElement.querySelector('.unread-mark'); // Select the unread marker (if it exists)
+
+                if (data.has_unread_messages) {
+                    if (!unreadMark) { // If the marker doesn't exist, create it
+                        const unreadMark = document.createElement('span');
+                        unreadMark.textContent = '●';
+                        unreadMark.style.color = 'red';
+                        unreadMark.style.marginLeft = '10px';
+                        unreadMark.classList.add('unread-mark'); // Add a class for easy selection
+                        userElement.appendChild(unreadMark);
+                    }
+                } else {
+                    if (unreadMark) { // If the marker exists, remove it
+                        userElement.removeChild(unreadMark);
+                    }
+                }
+            })
+            .catch(error => console.error('Error updating unread status:', error));
+        }
+        // function refreshChat() {
+
+        //     if (selectedUserEmail) { 
+        //         loadMessages(selectedUserEmail);
+        //         updateUnreadStatus(selectedUserEmail); 
+        //     }
+        // }
+
+        // setInterval(refreshChat, 5000);
     </script>
 </body>
 </html>
