@@ -68,8 +68,12 @@
         }
 
         .chat-box {
-            width: 70%;
-            padding: 20px;
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding: 10px;
+            display: none;
         }
 
         .chat-box h3 {
@@ -152,12 +156,13 @@
             }
 
             .chat-box {
-                position: relative;
-                top: 0;
-                left: 0;
                 width: 100%;
                 height: 100vh;
+                overflow-y: auto;
+                box-sizing: border-box;
+                padding: 10px;
                 transition: transform 0.3s ease-in-out;
+                display: none;
             }
 
             .chat-box.hidden {
@@ -334,6 +339,7 @@
         function showChatBox(email, name) {
             const chatBox = document.querySelector('.chat-box');
             chatBox.classList.remove('hidden');
+            chatBox.style.display = 'block'; /* Show chat box when user is selected */
             selectedUserEmail = email;
             chatTitle.textContent = `Chat with ${name}`;
             loadMessages(email);
@@ -349,6 +355,7 @@
 
             const chatBox = document.querySelector('.chat-box');
             chatBox.classList.remove('show');
+            chatBox.style.display = 'none';
         }
 
         document.querySelector('.back-button').addEventListener('click', showUserList);
@@ -356,6 +363,7 @@
             if (window.history.state && window.history.state.page === 'chat') {
                 const chatBox = document.querySelector('.chat-box');
                 chatBox.classList.add('hidden');
+                chatBox.style.display = 'none';
                 const userList = document.querySelector('.user-list');
                 userList.classList.remove('hidden');
                 userList.addEventListener('click', (e) => {
