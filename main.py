@@ -7,6 +7,7 @@ import os
 import json
 from werkzeug.utils import secure_filename
 import requests
+import user_agents
 
 
 cnx = mysql.connector.connect(user='root', password='')
@@ -38,10 +39,13 @@ def index():
         'ngrok-skip-browser-warning': 'true'
     }
 
-    response = requests.get(url, headers=headers)
+    user_agent = request.headers.get('User-Agent')
+    is_mobile = user_agents.parse(user_agent).is_mobile
 
-    # print(response.text)
-    return render_template('landing.html')
+    if is_mobile:
+        return redirect(url_for('home_page'))  # Redirect to home page if on mobile
+    else:
+        return redirect(url_for('landing_page'))  # Show landing page on desktop
 
 @app.route('/home')
 def home_page():
@@ -327,8 +331,8 @@ def update_profile():
         cursor.execute(query, tuple(params))
         cnx.commit()
 
-        if current_user is not None:
-            current_user = cu.get_user_details(current_user[1], cursor, current_role)
+        if session.get('user') is not None:
+            session['user'] = cu.get_user_details(current_user[1], cursor, current_role)
 
         return jsonify({"success": True, "message": "Profile updated successfully"}), 200
     except Exception as e:
@@ -709,7 +713,7 @@ def get_all_loans():
                 'email': row[1],
                 'loan_amount': row[6],
                 'loan_status': row[7],
-                'profilePicPath': row[2] if row[3] else '/static/images/webpages/blank_profile.webp'  
+                'profilePicPath': row[5] if row[5] else '/static/images/webpages/blank_profile.webp'  
             })
 
         print("Loan Requests: ", loan_requests)
