@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, render_template, jsonify, session
+from flask import Flask, request, redirect, url_for, render_template, jsonify, session, send_from_directory
 import mysql.connector
 import databaseop as dbop
 import common_util as cu
@@ -8,6 +8,9 @@ import json
 from werkzeug.utils import secure_filename
 import requests
 import user_agents
+import base64
+from io import BytesIO
+
 
 
 cnx = mysql.connector.connect(user='root', password='')
@@ -67,14 +70,33 @@ def login_page():
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    client_type = request.args.get('client')  # Get the 'client' query parameter
+    if request.form.get('role') is not None:
+        session['role'] = request.form.get('role')
+    print("login for", request.form.get('email'), "and", request.form.get('password'), "is in progress...")
     current_role = session.get('role')
     if current_role is None:
-        return "Please select role from homepage, redirecting in 3 seconds...", 401
+        if client_type == 'android':  # Return JSON for Android
+            return jsonify({'success': False, 'message': 'Please select role from homepage'}), 401
+        else:  # Return HTML/redirect for web
+            return "Please select role from homepage, redirecting in 3 seconds...", 401
     # global current_user
     success = cu.do_login(request, cursor, current_role)
     if not success:
-       return "Invalid credentials, please try again.", 401
+        if client_type == 'android':
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        else:
+            return "Invalid credentials, please try again.", 401
+            
     session['user'] = cu.get_user_details(request.form.get('email'), cursor, current_role)
+    current_user = session.get('user')
+    print(session.get('user'))
+    profile_picture = current_user[9] if current_user[9] is not None else './static/images/webpages/blank_profile.webp'
+    user_info = { "name": current_user[0], "phone": current_user[3], "aadharno": current_user[6], "bankaccno": current_user[7], "profilePic": get_image(profile_picture)}
+
+    if client_type == 'android':
+        return jsonify({'success': True, 'role': current_role, 'user': user_info}), 200
+
     if current_role == 'beneficiary':
         return url_for('beneficiary_page')
     elif current_role == 'manager':
@@ -83,6 +105,12 @@ def login():
         return url_for('organizer_page')
     else:
         return "Invalid role", 401
+
+def get_image(image_path):
+    # Open the image file in binary mode and encode it as Base64
+    with open(image_path, "rb") as image_file:
+        image_data = image_file.read()
+        return base64.b64encode(image_data).decode('utf-8')
 
 @app.route('/signup')
 def signup_page():
@@ -158,9 +186,11 @@ def loan_application_page():
 def loan_application():
     current_role = session.get('role')
     current_user = session.get('user')
+    print(session.get('user'))
+    print(session.get('role'))
     cu.loan_application(request, cursor, current_role, current_user)
     cnx.commit()
-    return jsonify({'message': 'Loan application submitted, redirecting in 3 seconds...', 'redirect': '/beneficiary'}), 200
+    return jsonify({'success': True, 'message': 'Loan application submitted, redirecting in 3 seconds...', 'redirect': '/beneficiary'}), 200
 
 
 @app.route('/api/user_loan', methods=['GET'])
@@ -231,6 +261,7 @@ def profile_page():
 @app.route('/api/profileinfo', methods=['GET'])
 def profile_info(): 
     # global current_user
+    is_android = request.args.get('client') == 'android'
     current_user = session.get('user')
     print("Current user: ", current_user)
     email = request.args.get('email') 
@@ -259,7 +290,11 @@ def profile_info():
         profile_picture = current_user[9] if current_user[9] is not None else '/static/images/webpages/blank_profile.webp'
         dob_str = current_user[5]
         dob_datetime = datetime.strptime(current_user[5], '%a, %d %b %Y %H:%M:%S %Z') if current_user[5] else None
-        user_info = { "name": current_user[0], "phone": current_user[3], "dob": dob_datetime.strftime('%Y-%m-%d') if dob_datetime else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
+        if is_android:
+            profile_picture = get_image(profile_picture)
+            user_info = { "name": current_user[0], "phone": current_user[3], "aadharno": current_user[6], "bankaccno": current_user[7], "profilePic": profile_picture}
+        else:
+            user_info = { "name": current_user[0], "phone": current_user[3], "dob": dob_datetime.strftime('%Y-%m-%d') if dob_datetime else None, "aadharno": current_user[6], "bankaccno": current_user[7], "profilePicPath": profile_picture}
         return jsonify(user_info)
 
 @app.route('/api/get_user_role', methods=['GET'])
@@ -451,6 +486,7 @@ def manage_economic_activity():
                 'profit_margin': result[8]
             })
         except Exception as e:
+            print("Error: ", e)
             return jsonify({'success': False, 'error': str(e)}), 500
 
     elif request.method == 'POST':
@@ -492,6 +528,7 @@ def manage_economic_activity():
 
         except Exception as e:
             cnx.rollback()
+            print("Error: ", e)
             return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/income_savings_page')
@@ -527,7 +564,7 @@ def income_savings():
                     'monthly_savings_contributions': data[6]
                 })
             else:
-                return jsonify({'success': True})  
+                return jsonify({'success': True}), 200  
 
         except Exception as e:
             print(f"Error fetching income and savings data: {e}")

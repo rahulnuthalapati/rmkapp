@@ -1,0 +1,13 @@
+<!-- res/drawable/circle_button_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Set white background color -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Optional: Add padding -->
+    <padding android:left="70dp"
+        android:top="70dp"
+        android:right="70dp"
+        android:bottom="70dp" />
+</shape>
