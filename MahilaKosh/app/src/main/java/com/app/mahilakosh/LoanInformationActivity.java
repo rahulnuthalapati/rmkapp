@@ -40,45 +40,67 @@ public class LoanInformationActivity extends AppCompatActivity {
         loanAdapter = new LoanAdapter(this, loanList);
         loanRecyclerView.setAdapter(loanAdapter);
 
-        fetchLoanInformation();
+        String responseData = getIntent().getStringExtra("response_data");
+        if (responseData != null) {
+            fetchLoanInformation(responseData);
+        } else {
+            fetchLoanInformation("");
+        }
     }
 
-    private void fetchLoanInformation() {
-        String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "loan_information" + "?client=android";
+    private void fetchLoanInformation(String responseData) {
+        if ( !responseData.isEmpty()) {
+            try {
+                processLoanInformation(responseData);
+            }
+            catch (JSONException e) {
+                Log.e("LoanInfoActivity", "Error parsing JSON: " + e.getMessage());
+                Toast.makeText(LoanInformationActivity.this, "Error fetching loan information.", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else
+        {
+            String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "loan_information" + "?client=android";
 
-        RequestQueue queue = MyApplication.getRequestQueue();
-        StringRequest request = new StringRequest(Request.Method.GET, apiUrl,
-                response -> {
-                    try {
-                        JSONObject jsonObject = new JSONObject(response);
-                        if (jsonObject.getBoolean("loan_exists")) {
-                            JSONArray loansArray = jsonObject.getJSONArray("loans");
-                            for (int i = 0; i < loansArray.length(); i++) {
-                                JSONObject loanObject = loansArray.getJSONObject(i);
-                                int loanId = loanObject.getInt("loan_id");
-                                double loanAmount = loanObject.getDouble("loan_amount");
-                                String loanStatus = loanObject.getString("loan_status");
-                                boolean paymentExists = loanObject.getBoolean("payment_exists");
-                                loanList.add(new Loan(loanId, loanAmount, loanStatus, paymentExists));
-                            }
-                            loanAdapter.notifyDataSetChanged();
-                        } else {
-                            // Handle the case where there are no loans (e.g., display a message)
-                            Toast.makeText(LoanInformationActivity.this, "No loan information found.", Toast.LENGTH_SHORT).show();
+            RequestQueue queue = MyApplication.getRequestQueue();
+            StringRequest request = new StringRequest(Request.Method.GET, apiUrl,
+                    response -> {
+                        try {
+                            processLoanInformation(response);
                         }
-                    } catch (JSONException e) {
-                        Log.e("LoanInfoActivity", "Error parsing JSON: " + e.getMessage());
+                        catch (JSONException e) {
+                            Log.e("LoanInfoActivity", "Error parsing JSON: " + e.getMessage());
+                            Toast.makeText(LoanInformationActivity.this, "Error fetching loan information.", Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        Log.e("LoanInfoActivity", "VolleyError: " + error.getMessage());
                         Toast.makeText(LoanInformationActivity.this, "Error fetching loan information.", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> {
-                    Log.e("LoanInfoActivity", "VolleyError: " + error.getMessage());
-                    Toast.makeText(LoanInformationActivity.this, "Error fetching loan information.", Toast.LENGTH_SHORT).show();
-                });
-        queue.add(request);
+                    });
+            queue.add(request);
+        }
     }
 
-    // Loan class to hold loan data
+    private void processLoanInformation(String response) throws JSONException
+    {
+        JSONObject jsonObject = new JSONObject(response);
+        if (jsonObject.getBoolean("loan_exists")) {
+            JSONArray loansArray = jsonObject.getJSONArray("loans");
+            for (int i = 0; i < loansArray.length(); i++) {
+                JSONObject loanObject = loansArray.getJSONObject(i);
+                int loanId = loanObject.getInt("loan_id");
+                double loanAmount = loanObject.getDouble("loan_amount");
+                String loanStatus = loanObject.getString("loan_status");
+                boolean paymentExists = loanObject.getBoolean("payment_exists");
+                loanList.add(new Loan(loanId, loanAmount, loanStatus, paymentExists));
+            }
+            loanAdapter.notifyDataSetChanged();
+        }
+        else {
+            Toast.makeText(LoanInformationActivity.this, "No loan information found.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public static class Loan {
         int loanId;
         double loanAmount;
@@ -93,7 +115,6 @@ public class LoanInformationActivity extends AppCompatActivity {
         }
     }
 
-    // RecyclerView Adapter
     public static class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.LoanViewHolder> {
         private Context context;
         private List<Loan> loans;
@@ -117,7 +138,6 @@ public class LoanInformationActivity extends AppCompatActivity {
             holder.loanStatusTextView.setText("Status: " + loan.loanStatus);
 
             holder.viewDetailsButton.setOnClickListener(v -> {
-                // Start LoanDetailsActivity and pass the loan ID
                 Intent intent = new Intent(context, LoanPaymentActivity.class);
                 intent.putExtra("loanId", loan.loanId);
                 context.startActivity(intent);
@@ -126,8 +146,7 @@ public class LoanInformationActivity extends AppCompatActivity {
             if (loan.paymentExists) {
                 holder.viewDetailsButton.setVisibility(View.VISIBLE);
                 holder.viewDetailsButton.setOnClickListener(v -> {
-                    // Start LoanPaymentActivity and pass the loan ID
-                    Intent intent = new Intent(context, LoanPaymentActivity.class); // Corrected activity name
+                    Intent intent = new Intent(context, LoanPaymentActivity.class);
                     intent.putExtra("loanId", loan.loanId);
                     context.startActivity(intent);
                 });

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="20dp">
@@ -9,33 +10,46 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome to the Bank Application"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="40dp"/>
+        android:layout_marginBottom="40dp"
+        android:fontFamily="@font/alata"
+        android:text="Mahila Kosh"
+        android:textColor="@android:color/black"
+        android:textSize="40sp"
+        android:textStyle="bold" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/beneficiaryButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Beneficiary"
-        android:layout_marginBottom="20dp"/>
+        android:drawableTop="@drawable/ic_beneficiary"
+        android:drawablePadding="16dp"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        app:iconGravity="textStart"
+        android:gravity="center_vertical|center_horizontal"
+        style="@style/ModernButtonStyle" />
 
-
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/managerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Manager"
-        android:layout_marginBottom="20dp"/>
+        android:text="Bank Employee"
+        android:drawableTop="@drawable/ic_manager"
+        android:drawablePadding="16dp"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_vertical|center_horizontal"
+        style="@style/ModernButtonStyle"/>
 
-
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/organizerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Organizer"
-        android:layout_marginBottom="20dp"/>
-
-
+        android:text="Manager"
+        android:drawableTop="@drawable/ic_organizer"
+        android:drawablePadding="16dp"
+        android:padding="16dp"
+        style="@style/ModernButtonStyle"
+        android:gravity="center_vertical|center_horizontal"/>
 </LinearLayout>

@@ -5,31 +5,55 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Manager Page"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/greeting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Hello, Manager!"
+            android:textSize="18sp"
+            android:layout_marginEnd="16dp"/>
+
+        <ImageButton
+            android:id="@+id/notificationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_notification"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"/>
+    </LinearLayout>
 
     <Button
         android:id="@+id/beneficiaryProfilesButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Beneficiary Profiles" />
+        android:text="Beneficiary Profiles"
+        android:layout_marginTop="16dp" />
 
     <Button
         android:id="@+id/loanManagementButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Loan Management" />
+        android:text="Loan Management"
+        android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/systemSettingsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="System Settings" />
+        android:text="System Settings"
+        android:layout_marginTop="8dp"/>
 
 </LinearLayout>

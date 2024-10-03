@@ -5,11 +5,12 @@
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/topLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingBottom="200dp">
+        android:paddingBottom="16dp">
 
         <ImageView
             android:id="@+id/profileImageView"
@@ -32,21 +33,24 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:layout_marginRight="8dp"/>
+            android:layout_marginRight="8dp"
+            style="@style/ModernButtonStyle"/>
 
         <Button
             android:id="@+id/logoutButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Logout" />
+            android:text="Logout"
+            style="@style/ModernButtonStyle"/>
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_marginTop="180dp"
+        android:layout_below="@+id/topLayout"
+        android:layout_marginTop="150dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center">
 
         <GridLayout
@@ -55,55 +59,68 @@
             android:rowCount="3"
             android:columnCount="2"
             android:layout_gravity="center"
-            android:gravity="center">
+            android:gravity="center"
+            android:useDefaultMargins="true">
 
             <Button
                 android:id="@+id/applyForLoanButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_loan"
-                android:text="Apply for Loan" />
+                android:text="Apply for Loan"
+                style="@style/ModernButtonStyle"/>
 
             <Button
                 android:id="@+id/loanInfoButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_info"
-                android:text="Loan Info" />
+                android:text="Loan Info"
+                style="@style/ModernButtonStyle"/>
 
             <Button
                 android:id="@+id/economicActivityButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_economic_activity"
-                android:text="Economic Activity" />
+                android:text="Economic Activity"
+                style="@style/ModernButtonStyle"/>
 
             <Button
                 android:id="@+id/incomeSavingsButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_savings"
-                android:text="Income and Savings" />
+                android:text="Income and Savings"
+                style="@style/ModernButtonStyle"/>
 
             <Button
                 android:id="@+id/feedbackButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_feedback"
-                android:text="Feedback" />
+                android:text="Feedback"
+                style="@style/ModernButtonStyle"/>
 
             <Button
                 android:id="@+id/manageProfileButton"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:drawableTop="@drawable/ic_profile"
-                android:text="Manage Profile" />
+                android:text="Manage Profile"
+                style="@style/ModernButtonStyle"/>
 
         </GridLayout>
 
@@ -121,8 +138,7 @@
         android:layout_alignParentEnd="true"
         android:elevation="10dp"
         android:paddingTop="22dp"
-        android:paddingRight="65dp"
         android:scaleType="centerInside"
-    />
+        />
 
 </RelativeLayout>

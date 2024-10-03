@@ -12,6 +12,7 @@ public class ApiUtils {
     public static final String HTTP = "http://";
     public static final String HTTPS = "https://";
     public static Object user = null;
+    public static String currentRole = "";
 
 
     public static String getCurrentUrl() {
@@ -26,10 +27,10 @@ public class ApiUtils {
                 return HTTPS + NGROK_URL;
             }
         } catch (UnknownHostException e) {
-            Log.e("ApiUtils", "Localhost not found: " + e.getMessage());
+//            Log.e("ApiUtils", "Localhost not found: " + e.getMessage());
             return HTTP + LOCALHOST_URL;
         } catch (Exception e) {
-            Log.e("ApiUtils", "Error checking localhost reachability: " + e.getMessage());
+//            Log.e("ApiUtils", "Error checking localhost reachability: " + e.getMessage());
             return HTTP + LOCALHOST_URL;
         }
     }

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, render_template, jsonify, session, send_from_directory
+from flask import Flask, request, redirect, url_for, render_template, jsonify, session, send_from_directory, current_app
 import mysql.connector
 import databaseop as dbop
 import common_util as cu
@@ -107,8 +107,13 @@ def login():
         return "Invalid role", 401
 
 def get_image(image_path):
-    # Open the image file in binary mode and encode it as Base64
-    with open(image_path, "rb") as image_file:
+    full_path = os.path.join(current_app.root_path, 'static', image_path)
+    print(f"Attempting to open file at path: {full_path}")
+
+    if not os.path.exists(full_path):
+        return None
+
+    with open(full_path, "rb") as image_file:
         image_data = image_file.read()
         return base64.b64encode(image_data).decode('utf-8')
 
@@ -119,16 +124,29 @@ def signup_page():
 @app.route('/api/signup', methods=['POST'])
 def signup():
     # global current_role
+    client_type = request.args.get('client')  # Get the 'client' query parameter
+    print(request.form)
+    if request.form.get('role') is not None:
+        session['role'] = request.form.get('role')
     current_role = session.get('role')
     if current_role is None:
-        return "Please select role from homepage", 401
+        if client_type == 'android':  # Return JSON for Android
+            return jsonify({'success': False, 'message': 'Please select role from homepage'}), 401
+        else:  # Return HTML/redirect for web
+            return "Please select role from homepage, redirecting in 3 seconds...", 401
     print("signup for", request.form.get('email'), "is in progress...")
     success = cu.do_signup(request, cursor, current_role)
     if not success:
-       return "Error occured while creating account, check logs in server.", 520
+        if client_type == 'android':
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        else:
+            return "Invalid credentials, please try again.", 401
     cnx.commit()
     print("signup for", request.form.get('email'), "is successful")
-    return url_for('login_page'), 200
+    if client_type == 'android':
+        return jsonify({'success': True, 'message': 'Signup successful. Redirecting to login.'}), 200 
+    else:
+        return url_for('login_page'), 200
 
 @app.route('/beneficiary', methods=['GET', 'POST'])
 def beneficiary_page():
@@ -554,6 +572,7 @@ def income_savings():
             data = cursor.fetchone()
             
             if data:
+                print(data)
                 return jsonify({
                     'success': True,
                     'monthly_income': data[1], 
@@ -716,7 +735,10 @@ def loan_management_page():
 
 @app.route('/api/modify_loan_status', methods=['POST'])
 def modify_loan_status():
+    print("Request Headers:", request.headers)  # Log the headers
+    print("Request Data (raw):", request.data)
     data = request.get_json()
+    print("Data:", data)
     loan_id = data.get('loan_id')
     loan_status = data.get('loan_status')
 
@@ -872,7 +894,7 @@ def change_password_api():
         return jsonify({'success': False, 'error': 'Missing current or new password'}), 400
 
     try:
-        # Check if the current password matches
+        # Check if the cu drrent password matches
         cursor.execute("SELECT password FROM users WHERE email = %s", (current_user[1],))
         actual_password = cursor.fetchone()
 
@@ -894,7 +916,7 @@ def chat_page():
     current_user = session.get('user')
     current_role = session.get('role')
     if current_user is None:
-        return redirect(url_for('home_page'))  # Redirect if not logged in
+        return redirect(url_for('home_page')) 
     return render_template('chat.html', current_user=current_user, current_role=current_role)
 
 @app.route('/api/get_users_for_chat', methods=['GET'])

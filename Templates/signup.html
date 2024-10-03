@@ -143,6 +143,16 @@
     </div>
 
     <script>
+        const role = "{{ role }}"; 
+        if(role === "manager")
+        {
+            document.getElementsByTagName('h1')[0].textContent = "Bank Employee Signup";
+        }
+        if(role === "organizer")
+        {
+            document.getElementsByTagName('h1')[0].textContent = "Manager Signup";
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const role = "{{ role }}"; 
             if (role === 'organizer') {

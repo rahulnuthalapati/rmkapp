@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private void startLoginActivity(String role) {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.putExtra("role", role);
+        ApiUtils.currentRole = role;
         startActivity(intent);
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="bank_options">
+        <item>Select a bank</item>
+        <item>Chennai</item>
+        <item>Tirupati</item>
+        <item>Poonamalle</item>
+    </string-array>
+</resources>

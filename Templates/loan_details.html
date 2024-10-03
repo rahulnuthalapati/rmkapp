@@ -343,7 +343,7 @@
         disburseButton.style.opacity = '1';
         disburseButton.disabled = false;
 
-        if (isManager) { 
+        if (!isManager) { 
             if (status === 'pending' || status === 'verified') {
                 approveButton.style.display = 'block';
                 rejectButton.style.display = 'block';

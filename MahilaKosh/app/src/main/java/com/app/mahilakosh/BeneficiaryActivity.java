@@ -61,9 +61,7 @@ public class BeneficiaryActivity extends AppCompatActivity {
                 .into(profileImageView);
 
         logoutButton.setOnClickListener(v -> {
-            // Handle logout (clear session, start LoginActivity)
             Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
-            // Add your logout logic here (e.g., clear session, start MainActivity)
             Intent intent = new Intent(BeneficiaryActivity.this, MainActivity.class);
             startActivity(intent);
         });

@@ -18,6 +18,7 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
+            android:textColor="@color/black"
             android:layout_marginBottom="16dp"/>
 
         <LinearLayout
@@ -133,7 +134,8 @@
                     android:id="@+id/aadhaarButton"
                     android:layout_width="115dp"
                     android:layout_height="wrap_content"
-                    android:text="Aadhaar Card" />
+                    android:text="Aadhaar Card"
+                    style="@style/ModernButtonStyle"/>
 
             </LinearLayout>
 
@@ -155,7 +157,8 @@
                     android:id="@+id/panButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PAN Card" />
+                    android:text="PAN Card"
+                    style="@style/ModernButtonStyle"/>
 
             </LinearLayout>
 
@@ -177,7 +180,8 @@
                     android:id="@+id/passbookButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Passbook" />
+                    android:text="Passbook"
+                    style="@style/ModernButtonStyle"/>
 
             </LinearLayout>
 
@@ -197,9 +201,10 @@
 
                 <Button
                     android:id="@+id/passportButton"
-                    android:layout_width="115dp"
+                    android:layout_width="118dp"
                     android:layout_height="wrap_content"
-                    android:text="Passport Photo" />
+                    android:text="Passport Photo"
+                    style="@style/ModernButtonStyle"/>
 
             </LinearLayout>
 
@@ -210,6 +215,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:text="Submit Request" />
+            android:text="Submit Request"
+            style="@style/ModernButtonStyle"/>
     </LinearLayout>
 </ScrollView>

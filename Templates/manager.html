@@ -208,7 +208,7 @@
             try {
                 const response = await fetch('/api/profileinfo');
                 const data = await response.json();
-                const userName = data.name || 'Manager';
+                const userName = data.name || 'Bank Employee';
                 document.querySelector('.greeting').textContent = `Hello ${userName}!`;
             } catch (error) {
                 console.error('Error fetching user profile info:', error);

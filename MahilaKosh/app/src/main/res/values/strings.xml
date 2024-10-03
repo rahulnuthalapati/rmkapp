@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Mahila Kosh</string>
+    <string name="aadhaar_card">Aadhaar Card</string>
+    <string name="pan_card">PAN Card</string>
+    <string name="passbook">Passbook</string>
+    <string name="passport">Passport</string>
 </resources>

@@ -36,58 +36,76 @@ public class IncomeSavingsActivity extends AppCompatActivity {
         editButton = findViewById(R.id.editButton);
         saveButton = findViewById(R.id.saveButton);
 
-        editButton.setOnClickListener(v -> {
-            enableEditFields(true);
+        if(ApiUtils.currentRole.equals("beneficiary")){
+            editButton.setOnClickListener(v -> {
+                enableEditFields(true);
 
+                // Show the Save button, hide the Edit button
+                editButton.setVisibility(View.GONE);
+                saveButton.setVisibility(View.VISIBLE);
+            });
+
+            saveButton.setOnClickListener(v -> saveIncomeSavingsData());
+        }
+        else
+        {
             editButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.VISIBLE);
-        });
+            saveButton.setVisibility(View.GONE);
+        }
 
-        saveButton.setOnClickListener(v -> saveIncomeSavingsData());
+        String responseData = getIntent().getStringExtra("response_data");
 
-        // Fetch data when the activity is created
-        fetchIncomeSavingsData();
+        if (responseData != null) {
+            fetchIncomeSavingsData(responseData);
+        } else {
+            fetchIncomeSavingsData("");
+        }
     }
 
-    private void enableEditFields(boolean enabled) {
-        monthlyIncomeEditText.setEnabled(enabled);
-        annualIncomeEditText.setEnabled(enabled);
-        sourcesIncomeEditText.setEnabled(enabled);
-        savingsAccNoEditText.setEnabled(enabled);
-        currentSavingsEditText.setEnabled(enabled);
-        monthlySavingsEditText.setEnabled(enabled);
-    }
+    private void fetchIncomeSavingsData(String responseData) {
+        if ( !responseData.isEmpty()) {
+            try {
+                processFetchIncomeSavingsData(new JSONObject(responseData));
+            }
+            catch (JSONException e) {
+                Log.e("IncomeSavingsActivity", "Error parsing JSON: " + e.getMessage());
+                Toast.makeText(IncomeSavingsActivity.this, "Error fetching income and savings data.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "income_savings" + "?client=android";
 
-    private void fetchIncomeSavingsData() {
-        String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "income_savings" + "?client=android";
-
-        RequestQueue queue = MyApplication.getRequestQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, apiUrl, null,
-                response -> {
-                    try {
-                        if (response.getBoolean("success")) { // Check for success flag
-                            // Populate EditTexts with data
-                            monthlyIncomeEditText.setText(String.valueOf(response.optInt("monthly_income", 0)));
-                            annualIncomeEditText.setText(String.valueOf(response.optInt("annual_income", 0)));
-                            sourcesIncomeEditText.setText(response.optString("sources", "N/A"));
-                            savingsAccNoEditText.setText(response.optString("savings_acc_details", "N/A"));
-                            currentSavingsEditText.setText(String.valueOf(response.optInt("savings_balance", 0)));
-                            monthlySavingsEditText.setText(String.valueOf(response.optInt("monthly_savings_contributions", 0)));
-                        } else {
-                            // Handle error, e.g., display error message
-                            Toast.makeText(IncomeSavingsActivity.this, response.optString("error", "Failed to fetch data."), Toast.LENGTH_SHORT).show();
+            RequestQueue queue = MyApplication.getRequestQueue();
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, apiUrl, null,
+                    response -> {
+                        try {
+                            processFetchIncomeSavingsData(response);
+                        } catch (JSONException e) {
+                            Log.e("IncomeSavingsActivity", "Error parsing JSON: " + e.getMessage());
+                            Toast.makeText(IncomeSavingsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
                         }
-                    } catch (JSONException e) {
-                        Log.e("IncomeSavingsActivity", "Error parsing JSON: " + e.getMessage());
+                    },
+                    error -> {
+                        Log.e("IncomeSavingsActivity", "VolleyError: " + error.getMessage());
                         Toast.makeText(IncomeSavingsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> {
-                    Log.e("IncomeSavingsActivity", "VolleyError: " + error.getMessage());
-                    Toast.makeText(IncomeSavingsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
-                });
+                    });
 
-        queue.add(request);
+            queue.add(request);
+        }
+    }
+
+    private void processFetchIncomeSavingsData(JSONObject response) throws JSONException {
+        if (response.getBoolean("success")) { // Check for success flag
+            // Populate EditTexts with data
+            monthlyIncomeEditText.setText(String.valueOf(response.optInt("monthly_income", 0)));
+            annualIncomeEditText.setText(String.valueOf(response.optInt("annual_income", 0)));
+            sourcesIncomeEditText.setText(response.optString("sources", "N/A"));
+            savingsAccNoEditText.setText(response.optString("savings_acc_details", "N/A"));
+            currentSavingsEditText.setText(String.valueOf(response.optInt("savings_balance", 0)));
+            monthlySavingsEditText.setText(String.valueOf(response.optInt("monthly_savings_contributions", 0)));
+        } else {
+            // Handle error, e.g., display error message
+            Toast.makeText(IncomeSavingsActivity.this, response.optString("error", "Failed to fetch data."), Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -132,6 +150,15 @@ public class IncomeSavingsActivity extends AppCompatActivity {
 
         RequestQueue queue = MyApplication.getRequestQueue();
         queue.add(request);
+    }
+
+    private void enableEditFields(boolean enabled) {
+        monthlyIncomeEditText.setEnabled(enabled);
+        annualIncomeEditText.setEnabled(enabled);
+        sourcesIncomeEditText.setEnabled(enabled);
+        savingsAccNoEditText.setEnabled(enabled);
+        currentSavingsEditText.setEnabled(enabled);
+        monthlySavingsEditText.setEnabled(enabled);
     }
 
 }

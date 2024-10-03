@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
@@ -143,13 +145,25 @@ public class MessagingActivity extends AppCompatActivity {
                     Toast.makeText(MessagingActivity.this, "Failed to send message", Toast.LENGTH_SHORT).show();
                 }) {
             @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("receiver_email", receiverEmail);
-                params.put("message_text", messageText);
-                return params;
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                JSONObject jsonBody = new JSONObject();
+                try {
+                    jsonBody.put("receiver_email", receiverEmail);
+                    jsonBody.put("message_text", messageText);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return jsonBody.toString().getBytes();
             }
         };
+
         queue.add(request);
     }
 

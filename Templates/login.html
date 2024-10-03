@@ -141,6 +141,16 @@
     </div>
 
     <script>
+        const role = "{{ role }}"; 
+        if(role === "manager")
+        {
+            document.getElementsByTagName('h1')[0].textContent = "Bank Employee Login";
+        }
+        if(role === "organizer")
+        {
+            document.getElementsByTagName('h1')[0].textContent = "Manager Login";
+        }
+
         document.getElementById('login-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
 

@@ -1,12 +1,18 @@
 package com.app.mahilakosh;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -28,7 +34,10 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
+    private Button signupButton;
     private String role;
+    private ImageView loginIcon; // Added for the icon
+    private TextView loginTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +47,33 @@ public class LoginActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
+        signupButton = findViewById(R.id.signupButton);
+        loginTitle = findViewById(R.id.loginTitle);
 
         // Get the role from the intent
         Intent intent = getIntent();
         if (intent != null) {
             role = intent.getStringExtra("role");
+
+            String titleText = "Beneficiary Login";
+            switch (role) {
+                case "manager":
+                    titleText = "Manager Login";
+                    break;
+                case "organizer":
+                    titleText = "Organizer Login";
+                    break;
+            }
+
+            loginTitle.setText(titleText);
+
         }
+
+        signupButton.setOnClickListener(v -> {
+            Intent signupIntent = new Intent(LoginActivity.this, SignupActivity.class);
+            signupIntent.putExtra("role", role); // Pass the role to SignupActivity
+            startActivity(signupIntent);
+        });
 
 
         loginButton.setOnClickListener(v -> {

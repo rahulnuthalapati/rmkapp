@@ -42,65 +42,81 @@ public class EconomicActivitiesActivity extends AppCompatActivity {
         editButton = findViewById(R.id.editButton);
         saveButton = findViewById(R.id.saveButton);
 
-        // Set onClickListener for Edit button
-        editButton.setOnClickListener(v -> {
-            // Enable editing for all input fields
-            enableEditFields(true);
+        if(ApiUtils.currentRole.equals("beneficiary")){
+            editButton.setOnClickListener(v -> {
+                // Enable editing for all input fields
+                enableEditFields(true);
 
-            // Show the Save button, hide the Edit button
+                // Show the Save button, hide the Edit button
+                editButton.setVisibility(View.GONE);
+                saveButton.setVisibility(View.VISIBLE);
+            });
+
+            // Set onClickListener for Save button
+            saveButton.setOnClickListener(v -> saveEconomicActivityData());
+
+        }
+        else
+        {
             editButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.VISIBLE);
-        });
+            saveButton.setVisibility(View.GONE);
 
-        // Set onClickListener for Save button
-        saveButton.setOnClickListener(v -> saveEconomicActivityData());
+        }
 
-        // Fetch and display existing data when the activity is created
-        fetchEconomicActivityData();
+        String responseData = getIntent().getStringExtra("response_data");
+
+        if (responseData != null) {
+            fetchEconomicActivityData(responseData);
+        } else {
+            fetchEconomicActivityData("");
+        }
     }
 
-    private void enableEditFields(boolean enabled) {
-        businessNameEditText.setEnabled(enabled);
-        businessAddressEditText.setEnabled(enabled);
-        businessTypeEditText.setEnabled(enabled);
-        monthlyRevenueEditText.setEnabled(enabled);
-        annualRevenueEditText.setEnabled(enabled);
-        monthlyExpensesEditText.setEnabled(enabled);
-        annualExpensesEditText.setEnabled(enabled);
-        profitMarginEditText.setEnabled(enabled);
-    }
 
-    private void fetchEconomicActivityData() {
-        String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "economic_activity" + "?client=android";
+    private void fetchEconomicActivityData(String responseData) {
+        if (!responseData.isEmpty()) {
+            try {
+                processEconomicActivityData(new JSONObject(responseData));
+            } catch (JSONException e) {
+                Log.e("EconomicActivity", "Error parsing JSON: " + e.getMessage());
+                Toast.makeText(EconomicActivitiesActivity.this, "Failed to load economic activity data", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else {
+            String apiUrl = ApiUtils.getCurrentUrl() + ApiUtils.API_PATH + "economic_activity" + "?client=android";
 
-        RequestQueue queue = MyApplication.getRequestQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, apiUrl, null,
-                response -> {
-                    try {
-                        if (response.has("message")) {
-                            Toast.makeText(EconomicActivitiesActivity.this, response.getString("message"), Toast.LENGTH_LONG).show();
-                        } else {
-                            businessTypeEditText.setText(response.optString("type", "N/A"));
-                            businessNameEditText.setText(response.optString("name", "N/A"));
-                            businessAddressEditText.setText(response.optString("address", "N/A"));
-                            monthlyRevenueEditText.setText(String.valueOf(response.optInt("monthly_revenue", 0)));
-                            annualRevenueEditText.setText(String.valueOf(response.optInt("annual_revenue", 0)));
-                            monthlyExpensesEditText.setText(String.valueOf(response.optInt("monthly_expense", 0)));
-                            annualExpensesEditText.setText(String.valueOf(response.optInt("annual_expense", 0)));
-                            profitMarginEditText.setText(String.valueOf(response.optInt("profit_margin", 0)));
+            RequestQueue queue = MyApplication.getRequestQueue();
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, apiUrl, null,
+                    response -> {
+                        try {
+                            processEconomicActivityData(response);
+                        } catch (JSONException e) {
+                            Log.e("EconomicActivity", "Error parsing JSON: " + e.getMessage());
+                            Toast.makeText(EconomicActivitiesActivity.this, "Failed to load economic activity data", Toast.LENGTH_SHORT).show();
                         }
-
-                    } catch (JSONException e) {
-                        Log.e("EconomicActivity", "Error parsing JSON: " + e.getMessage());
+                    },
+                    error -> {
+                        Log.e("EconomicActivity", "VolleyError: " + error.getMessage());
                         Toast.makeText(EconomicActivitiesActivity.this, "Failed to load economic activity data", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> {
-                    Log.e("EconomicActivity", "VolleyError: " + error.getMessage());
-                    Toast.makeText(EconomicActivitiesActivity.this, "Failed to load economic activity data", Toast.LENGTH_SHORT).show();
-                });
+                    });
 
-        queue.add(request);
+            queue.add(request);
+        }
+    }
+
+    private void processEconomicActivityData(JSONObject response) throws JSONException {
+        if (response.has("message")) {
+            Toast.makeText(EconomicActivitiesActivity.this, response.getString("message"), Toast.LENGTH_LONG).show();
+        } else {
+            businessTypeEditText.setText(response.optString("type", "N/A"));
+            businessNameEditText.setText(response.optString("name", "N/A"));
+            businessAddressEditText.setText(response.optString("address", "N/A"));
+            monthlyRevenueEditText.setText(String.valueOf(response.optInt("monthly_revenue", 0)));
+            annualRevenueEditText.setText(String.valueOf(response.optInt("annual_revenue", 0)));
+            monthlyExpensesEditText.setText(String.valueOf(response.optInt("monthly_expense", 0)));
+            annualExpensesEditText.setText(String.valueOf(response.optInt("annual_expense", 0)));
+            profitMarginEditText.setText(String.valueOf(response.optInt("profit_margin", 0)));
+        }
     }
 
 
@@ -150,6 +166,17 @@ public class EconomicActivitiesActivity extends AppCompatActivity {
 
         RequestQueue queue = MyApplication.getRequestQueue();
         queue.add(request);
+    }
+
+    private void enableEditFields(boolean enabled) {
+        businessNameEditText.setEnabled(enabled);
+        businessAddressEditText.setEnabled(enabled);
+        businessTypeEditText.setEnabled(enabled);
+        monthlyRevenueEditText.setEnabled(enabled);
+        annualRevenueEditText.setEnabled(enabled);
+        monthlyExpensesEditText.setEnabled(enabled);
+        annualExpensesEditText.setEnabled(enabled);
+        profitMarginEditText.setEnabled(enabled);
     }
 
 }
