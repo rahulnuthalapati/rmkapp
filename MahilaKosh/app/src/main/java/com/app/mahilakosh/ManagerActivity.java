@@ -48,7 +48,7 @@ public class ManagerActivity extends AppCompatActivity {
         });
 
         loanManagementButton.setOnClickListener(v -> {
-            // Start the LoanManagementActivity
+            // Start the LoanManagementActivityb
             startActivity(new Intent(ManagerActivity.this, LoanManagementActivity.class));
         });
 

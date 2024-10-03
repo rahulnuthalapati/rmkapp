@@ -58,10 +58,10 @@ public class LoginActivity extends AppCompatActivity {
             String titleText = "Beneficiary Login";
             switch (role) {
                 case "manager":
-                    titleText = "Manager Login";
+                    titleText = "Bank Employee Login";
                     break;
                 case "organizer":
-                    titleText = "Organizer Login";
+                    titleText = "Manager Login";
                     break;
             }
 

@@ -22,6 +22,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.textfield.TextInputEditText;
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
@@ -101,10 +103,13 @@ public class ProfileActivity extends AppCompatActivity {
                         bankAccountEditText.setText(String.valueOf(response.optLong("bankaccno")));
 
                         // Fetch and decode the Base64 profile image
-                        String base64Image = response.optString("profilePic", "");
-                        byte[] imageBytes = Base64.decode(base64Image, Base64.DEFAULT);
-                        Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                        profileImageView.setImageBitmap(decodedImage);
+                        String profilePath  = response.optString("profilePic", "");
+//                        byte[] imageBytes = Base64.decode(base64Image, Base64.DEFAULT);
+//                        Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                        Picasso.get().load(profilePath)
+                                .placeholder(R.drawable.default_profile)
+                                .error(R.drawable.default_profile) // In case of error, show default
+                                .into(profileImageView);
 
                     } catch (Exception e) {
                         Log.e("ProfileActivity", "JSON Parsing Error: " + e.getMessage());

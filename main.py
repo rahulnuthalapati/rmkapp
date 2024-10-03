@@ -62,6 +62,10 @@ def home_page():
     # print(response.text)
     return render_template('index.html')
 
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     if request.form.get('role') is not None:
@@ -92,7 +96,7 @@ def login():
     current_user = session.get('user')
     print(session.get('user'))
     profile_picture = current_user[9] if current_user[9] is not None else './static/images/webpages/blank_profile.webp'
-    user_info = { "name": current_user[0], "phone": current_user[3], "aadharno": current_user[6], "bankaccno": current_user[7], "profilePic": get_image(profile_picture)}
+    user_info = { "name": current_user[0], "phone": current_user[3], "aadharno": current_user[6], "bankaccno": current_user[7], "profilePic": profile_picture}
 
     if client_type == 'android':
         return jsonify({'success': True, 'role': current_role, 'user': user_info}), 200

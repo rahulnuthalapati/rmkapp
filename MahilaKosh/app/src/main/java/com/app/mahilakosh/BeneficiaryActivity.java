@@ -44,20 +44,19 @@ public class BeneficiaryActivity extends AppCompatActivity {
         chatButton = findViewById(R.id.chatButton);
         manageProfileButton = findViewById(R.id.manageProfileButton);
 
-        // Fetch user details (Name, profile pic URL)
-        // using Volley or Retrofit (REPLACE with your actual API calls)
-        String userName = null;  // Replace with fetched data
+        String userName = null;
+        String profileImageUrl;
         try {
             userName = (String) ((JSONObject) ApiUtils.user).get("name");
+            profileImageUrl = (String) ((JSONObject) ApiUtils.user).get("profilePic");
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-        String profileImageUrl = "https://example.com/profile.jpg";  // Replace with fetched data
 
         userNameTextView.setText(userName);
         Picasso.get().load(profileImageUrl)
                 .placeholder(R.drawable.default_profile)
-                .error(R.drawable.default_profile) // In case of error, show default
+                .error(R.drawable.default_profile)
                 .into(profileImageView);
 
         logoutButton.setOnClickListener(v -> {

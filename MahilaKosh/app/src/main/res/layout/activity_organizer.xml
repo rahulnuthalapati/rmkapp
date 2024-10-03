@@ -1,73 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/topLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
+        android:paddingBottom="16dp">
+
+        <ImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/default_profile"
+            android:layout_marginRight="16dp"/>
 
         <TextView
             android:id="@+id/greeting"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Hello, Organizer!"
-            android:textSize="18sp" />
-
-<!--        <ImageButton-->
-<!--            android:id="@+id/notificationButton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:src="@drawable/ic_notification"-->
-<!--            android:background="?android:attr/selectableItemBackgroundBorderless" />-->
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="Hello, Organizer!" />
 
         <Button
             android:id="@+id/logoutButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Logout"
-            android:layout_marginStart="8dp" />
+            style="@style/ModernButtonStyle"/>
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/loanRequestsButton"
+    <LinearLayout
+        android:layout_below="@+id/topLayout"
+        android:layout_marginTop="150dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Loan Requests" />
+        android:orientation="vertical"
+        android:gravity="center">
 
-    <Button
-        android:id="@+id/beneficiaryManagementButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Beneficiary Loan Management"
-        android:layout_marginTop="8dp" />
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:rowCount="3"
+            android:columnCount="2"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:useDefaultMargins="true">
 
-    <Button
-        android:id="@+id/feedbackButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Beneficiary Feedbacks"
-        android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/loanRequestsButton"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:drawableTop="@drawable/ic_loan"
+                android:text="Loan Requests"
+                style="@style/ModernButtonStyle"/>
 
-    <Button
-        android:id="@+id/chatButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Chat with Beneficiaries"
-        android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/beneficiaryManagementButton"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:drawableTop="@drawable/ic_manager"
+                android:text="Beneficiary Management"
+                style="@style/ModernButtonStyle"/>
 
-    <Button
-        android:id="@+id/systemSettingsButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="System Settings"
-        android:layout_marginTop="8dp" />
+            <Button
+                android:id="@+id/feedbackButton"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:drawableTop="@drawable/ic_feedback"
+                android:text="Beneficiary Feedbacks"
+                style="@style/ModernButtonStyle"/>
 
-</LinearLayout>
+            <Button
+                android:id="@+id/chatButton"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:drawableTop="@drawable/ic_chat"
+                android:text="Chat with Beneficiaries"
+                style="@style/ModernButtonStyle"/>
+
+            <Button
+                android:id="@+id/systemSettingsButton"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:drawableTop="@drawable/ic_settings"
+                android:text="System Settings"
+                style="@style/ModernButtonStyle"/>
+
+<!--            <Button-->
+<!--                style="@style/ModernButtonStyle"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="100dp"-->
+<!--                android:layout_columnWeight="1"-->
+<!--                android:layout_rowWeight="1"-->
+<!--                android:drawableTop="@drawable/ic_help"-->
+<!--                android:text="Help" />-->
+
+        </GridLayout>
+
+    </LinearLayout>
+
+<!--    <Button-->
+<!--        android:id="@+id/floatingChatButton"-->
+<!--        android:layout_width="80dp"-->
+<!--        android:layout_height="80dp"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:background="@drawable/circle_button_background"-->
+<!--        android:drawableTop="@drawable/ic_chat"-->
+<!--        android:tint="@color/white"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:elevation="10dp"-->
+<!--        android:paddingTop="16dp"-->
+<!--        android:scaleType="centerInside"-->
+<!--        />-->
+
+</RelativeLayout>
