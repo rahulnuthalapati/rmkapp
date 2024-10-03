@@ -34,7 +34,7 @@ public class BeneficiaryActivity extends AppCompatActivity {
 
         profileImageView = findViewById(R.id.profileImageView);
         userNameTextView = findViewById(R.id.userNameTextView);
-        notificationButton = findViewById(R.id.notificationButton);
+//        notificationButton = findViewById(R.id.notificationButton);
         logoutButton = findViewById(R.id.logoutButton);
         applyForLoanButton = findViewById(R.id.applyForLoanButton);
         loanInfoButton = findViewById(R.id.loanInfoButton);
@@ -66,12 +66,12 @@ public class BeneficiaryActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        notificationButton.setOnClickListener(v -> {
-            // Handle notification button click (start NotificationsActivity)
-            Toast.makeText(this, "Notification button clicked", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(BeneficiaryActivity.this, NotificationsActivity.class); // Replace with Notifications Activity
-            startActivity(intent);
-        });
+//        notificationButton.setOnClickListener(v -> {
+//            // Handle notification button click (start NotificationsActivity)
+//            Toast.makeText(this, "Notification button clicked", Toast.LENGTH_SHORT).show();
+//            Intent intent = new Intent(BeneficiaryActivity.this, NotificationsActivity.class); // Replace with Notifications Activity
+//            startActivity(intent);
+//        });
 
         applyForLoanButton.setOnClickListener(v -> {
             Intent intent = new Intent(BeneficiaryActivity.this, LoanApplicationActivity.class);

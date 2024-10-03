@@ -46,6 +46,10 @@ public class FeedbackActivity extends AppCompatActivity {
         feedbackRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         feedbackRecyclerView.setAdapter(feedbackAdapter);
 
+        if(!ApiUtils.currentRole.equals("beneficiary")) {
+            newFeedbackButton.setVisibility(View.GONE);
+        }
+
         fetchFeedback();
 
         newFeedbackButton.setOnClickListener(v -> showNewFeedbackDialog());

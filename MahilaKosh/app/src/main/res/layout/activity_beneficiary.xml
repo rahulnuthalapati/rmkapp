@@ -27,14 +27,14 @@
             android:textSize="18sp"
             android:text="User's Name" />
 
-        <ImageButton
-            android:id="@+id/notificationButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_notification"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:layout_marginRight="8dp"
-            style="@style/ModernButtonStyle"/>
+<!--        <ImageButton-->
+<!--            android:id="@+id/notificationButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:src="@drawable/ic_notification"-->
+<!--            android:background="?android:attr/selectableItemBackgroundBorderless"-->
+<!--            android:layout_marginRight="8dp"-->
+<!--            style="@style/ModernButtonStyle"/>-->
 
         <Button
             android:id="@+id/logoutButton"

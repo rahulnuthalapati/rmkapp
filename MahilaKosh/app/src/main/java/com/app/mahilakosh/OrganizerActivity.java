@@ -23,6 +23,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private Button chatButton;
     private Button systemSettingsButton;
     private ImageButton notificationButton;
+    private Button feedbackButton;
     private Button logoutButton;
     private TextView greetingTextView;
 
@@ -35,7 +36,9 @@ public class OrganizerActivity extends AppCompatActivity {
         beneficiaryLoanManagementButton = findViewById(R.id.beneficiaryManagementButton);
         chatButton = findViewById(R.id.chatButton);
         systemSettingsButton = findViewById(R.id.systemSettingsButton);
-        notificationButton = findViewById(R.id.notificationButton);
+//        notificationButton = findViewById(R.id.notificationButton);
+        feedbackButton = findViewById(R.id.feedbackButton);
+
         logoutButton = findViewById(R.id.logoutButton);
         greetingTextView = findViewById(R.id.greeting);
 
@@ -61,10 +64,15 @@ public class OrganizerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        notificationButton.setOnClickListener(v -> {
-            Toast.makeText(OrganizerActivity.this, "Notification button clicked", Toast.LENGTH_SHORT).show();
-            // Add your notification logic here
+        feedbackButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerActivity.this, FeedbackActivity.class);
+            startActivity(intent);
         });
+
+//        notificationButton.setOnClickListener(v -> {
+//            Toast.makeText(OrganizerActivity.this, "Notification button clicked", Toast.LENGTH_SHORT).show();
+//            // Add your notification logic here
+//        });
 
         logoutButton.setOnClickListener(v -> {
             Toast.makeText(OrganizerActivity.this, "Logging out...", Toast.LENGTH_SHORT).show();

@@ -20,12 +20,12 @@
             android:text="Hello, Organizer!"
             android:textSize="18sp" />
 
-        <ImageButton
-            android:id="@+id/notificationButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_notification"
-            android:background="?android:attr/selectableItemBackgroundBorderless" />
+<!--        <ImageButton-->
+<!--            android:id="@+id/notificationButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:src="@drawable/ic_notification"-->
+<!--            android:background="?android:attr/selectableItemBackgroundBorderless" />-->
 
         <Button
             android:id="@+id/logoutButton"
@@ -48,6 +48,13 @@
         android:layout_height="wrap_content"
         android:text="Beneficiary Loan Management"
         android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/feedbackButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Beneficiary Feedbacks"
+        android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/chatButton"
