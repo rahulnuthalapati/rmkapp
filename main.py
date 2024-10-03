@@ -732,13 +732,9 @@ def beneficiary_profiles():
     profiles_for_json = []
     for profile in profiles:
         dob = profile[5]
-
-        if isinstance(dob, datetime):
-            dob = dob.strftime('%Y-%m-%d') if dob else None
-        elif isinstance(dob, int):
-            dob = datetime.fromtimestamp(dob).strftime('%Y-%m-%d') if dob else None
-        else:
-            dob = None
+        
+        if dob:
+            dob = dob.isoformat()
 
         profiles_for_json.append({
             "name": profile[0],
