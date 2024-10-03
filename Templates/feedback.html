@@ -154,7 +154,7 @@
     <div class="container">
         <div class="header">
             <h1>Feedback and Surveys</h1>
-            <button class="new-feedback-button" onclick="openNewFeedbackForm()">New Feedback</button>
+            <button id="nnew-feedback" class="new-feedback-button" onclick="openNewFeedbackForm()">New Feedback</button>
         </div>
         <div class="table-container">
             <table id="feedback-table">
@@ -188,6 +188,25 @@
     </div>
 
     <script>
+        let current_role;
+        fetch('/api/get_user_role') // Replace '/api/get_user_role' with your actual endpoint
+        .then(response => response.json())
+        .then(data => {
+            current_role = data.role;
+            if (current_role != 'beneficiary') {
+                    document.getElementById('nnew-feedback').style.display = 'none';
+                    const newTh = document.createElement('th');
+                    newTh.textContent = 'Email'; 
+
+                    const tr = document.querySelector('#feedback-table thead tr');
+
+                    tr.appendChild(newTh);
+                } 
+            }
+        )
+        .catch(error => console.error('Error fetching user role:', error));
+
+
         document.addEventListener('DOMContentLoaded', function() {
             fetchFeedback();
         });
@@ -210,6 +229,7 @@
                                 <td>${feedback.feedback_id}</td>
                                 <td>${feedback.feedback_date}</td>
                                 <td onclick="openFeedbackPopup('${feedback.feedback_text}', '${feedback.feedback_date}')">${feedback.feedback_summary}</td> 
+                                ${current_role != 'beneficiary' ? `<td>${feedback.email}</td>` : ''}
                             `;
                             tbody.appendChild(row);
                         });

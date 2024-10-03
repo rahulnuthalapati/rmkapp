@@ -196,6 +196,10 @@
                 <i class="fas fa-file-invoice-dollar"></i>
                 Loan Management
             </button>
+            <button type="button" onclick="handleButtonClick('feedback_and_surveys')">
+                <i class="fas fa-comment-alt"></i>
+                Feedback from Beneficiaries
+            </button>
             <button type="button" onclick="handleButtonClick('system_settings')">
                 <i class="fas fa-cog"></i>
                 System Settings
@@ -221,6 +225,7 @@
             beneficiary_profiles: "{{ url_for('beneficiary_profiles_page') }}",
             loan_management: "{{ url_for('loan_management_page') }}",
             system_settings: "{{ url_for('system_settings') }}",
+            feedback_and_surveys: "{{ url_for('feedback_page') }}",
             notifications: "{{ url_for('notifications_page') }}",
         };
 

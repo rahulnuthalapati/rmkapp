@@ -108,9 +108,9 @@ public class LoanPaymentActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(PaymentViewHolder holder, int position) {
             Payment payment = payments.get(position);
-            holder.paymentIdTextView.setText("Payment ID: " + payment.paymentId);
-            holder.paymentAmountTextView.setText("Amount: ₹" + payment.amount);
-            holder.paymentDateTextView.setText("Date: " + payment.paymentDate);
+            holder.paymentIdTextView.setText(" " + payment.paymentId);
+            holder.paymentAmountTextView.setText("₹" + payment.amount);
+            holder.paymentDateTextView.setText(" " + payment.paymentDate);
         }
 
         @Override

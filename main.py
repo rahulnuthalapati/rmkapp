@@ -320,9 +320,11 @@ def get_user_role():
     # global current_role 
     current_role = session.get('role')
     if current_role == 'organizer': 
-        return jsonify({'is_manager': True}), 200
+        return jsonify({'is_manager': True, 'role':current_role}), 200
     else:
-        return jsonify({'is_manager': False}), 200
+        return jsonify({'is_manager': False, 'role':current_role}), 200
+
+
 
 @app.route('/api/update_profile', methods=['POST'])
 def update_profile():
@@ -438,6 +440,7 @@ def api_loan_information():
         
             loan_data.append({
                  "loan_id": loan_info[0],                  # Assuming loan_id is the first column
+                 "email": loan_info[1],
                  "loan_amount": loan_info[6],
                  "loan_status": loan_info[7],
                  "payment_exists": payment_exists})
@@ -642,12 +645,14 @@ def feedback_page():
 def api_feedback():
     # global current_user
     current_user = session.get('user')
+    current_role = session.get('role')
     if current_user is None:
         return jsonify({'error': 'User not logged in'}), 401
     
     email = current_user[1]
 
     if request.method == 'GET':
+        if current_role == 'beneficiary':
             try:
                 cursor.execute("SELECT feedback_id, feedback_date, feedback_text FROM feedback WHERE email = %s", (email,)) 
                 feedbacks = cursor.fetchall()
@@ -659,6 +664,25 @@ def api_feedback():
                         "feedback_text": feedback[2],
                         "feedback_summary": feedback[2][:50] + "..." if len(feedback[2]) > 50 else feedback[2]
                     })
+                return jsonify(feedback_data), 200
+
+            except Exception as e:
+                print(f"Error fetching feedback: {e}")
+                return jsonify({'error': 'Error fetching feedback'}), 500
+        else:
+            try:
+                cursor.execute("SELECT feedback_id, feedback_date, feedback_text, email FROM feedback") 
+                feedbacks = cursor.fetchall()
+                feedback_data = []
+                for feedback in feedbacks:
+                    feedback_data.append({
+                        "feedback_id": feedback[0],
+                        "feedback_date": feedback[1].strftime('%Y-%m-%d') if feedback[1] else None,  # Format the date
+                        "feedback_text": feedback[2],
+                        "feedback_summary": feedback[2][:50] + "..." if len(feedback[2]) > 50 else feedback[2],
+                        "email": feedback[3]
+                    })
+                print(feedback_data)
                 return jsonify(feedback_data), 200
 
             except Exception as e:

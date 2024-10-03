@@ -14,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Income and Savings"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -156,7 +157,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_gravity="center_horizontal"
-            android:text="Edit Income and Savings" />
+            android:text="Edit Income and Savings"
+            style="@style/ModernButtonStyle"/>
 
         <Button
             android:id="@+id/saveButton"
@@ -165,7 +167,8 @@
             android:layout_marginTop="8dp"
             android:layout_gravity="center_horizontal"
             android:text="Save Changes"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            style="@style/ModernButtonStyle"/>
 
     </LinearLayout>
 

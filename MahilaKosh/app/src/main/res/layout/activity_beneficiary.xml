@@ -130,14 +130,14 @@
         android:id="@+id/chatButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_margin="20dp"
+        android:layout_margin="16dp"
         android:background="@drawable/circle_button_background"
         android:drawableTop="@drawable/ic_chat"
-        android:tint="@color/black"
+        android:tint="@color/white"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:elevation="10dp"
-        android:paddingTop="22dp"
+        android:paddingTop="16dp"
         android:scaleType="centerInside"
         />
 

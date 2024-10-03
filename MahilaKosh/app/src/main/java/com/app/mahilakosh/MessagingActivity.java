@@ -108,7 +108,9 @@ public class MessagingActivity extends AppCompatActivity {
                         }
 
                         messageAdapter.notifyDataSetChanged();
-                        scrollToBottom(); // Scroll to the bottom to show the latest message
+                        if (messageAdapter.getItemCount() > 0) {
+                            scrollToBottom(); // Call scrollToBottom after updating the adapter
+                        } // Scroll to the bottom to show the latest message
                     } catch (JSONException e) {
                         Log.e("MessagingActivity", "JSON Parsing Error: " + e.getMessage());
                         Toast.makeText(MessagingActivity.this, "Failed to fetch messages", Toast.LENGTH_SHORT).show();
@@ -189,6 +191,7 @@ public class MessagingActivity extends AppCompatActivity {
 
 
     private void scrollToBottom() {
+        if(messageAdapter.getItemCount() > 0)
         messagesRecyclerView.postDelayed(() -> messagesRecyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1), 100);
     }
 

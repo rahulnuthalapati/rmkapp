@@ -174,10 +174,10 @@
     <div class="content-wrapper">
         <div class="greeting"></div>
         <div class="container">
-            <div class="header">
-                <h2>Organizer Page</h2>
-            </div>
-            
+            <!-- <div class="header">
+                <h2>Organizer Page</h2> -->
+            <!-- </div>
+             -->
             <div class="grid">
                 <button type="button" onclick="handleButtonClick('loan_requests')">
                     <i class="fas fa-hand-holding-usd"></i>
@@ -190,6 +190,10 @@
                 <button type="button" onclick="handleButtonClick('chat')">
                     <i class="fas fa-comments"></i>
                     Chat with Beneficiaries
+                </button>
+                <button type="button" onclick="handleButtonClick('feedback_and_surveys')">
+                    <i class="fas fa-comment-alt"></i>
+                    Feedback from Beneficiaries
                 </button>
                 <button type="button" onclick="handleButtonClick('system_settings')">
                     <i class="fas fa-cog"></i>
@@ -219,6 +223,7 @@
             beneficiary_profiles: "{{ url_for('beneficiary_profiles_page') }}",
             system_settings: "{{ url_for('system_settings') }}",
             notifications: "{{ url_for('notifications_page') }}",
+            feedback_and_surveys: "{{ url_for('feedback_page') }}",
             chat: "{{ url_for('chat_page') }}" 
         };
 

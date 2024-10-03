@@ -1,15 +1,18 @@
 package com.app.mahilakosh;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -89,10 +92,11 @@ public class LoanInformationActivity extends AppCompatActivity {
             for (int i = 0; i < loansArray.length(); i++) {
                 JSONObject loanObject = loansArray.getJSONObject(i);
                 int loanId = loanObject.getInt("loan_id");
+                String email = loanObject.getString("email");
                 double loanAmount = loanObject.getDouble("loan_amount");
                 String loanStatus = loanObject.getString("loan_status");
                 boolean paymentExists = loanObject.getBoolean("payment_exists");
-                loanList.add(new Loan(loanId, loanAmount, loanStatus, paymentExists));
+                loanList.add(new Loan(loanId, email, loanAmount, loanStatus, paymentExists));
             }
             loanAdapter.notifyDataSetChanged();
         }
@@ -103,19 +107,22 @@ public class LoanInformationActivity extends AppCompatActivity {
 
     public static class Loan {
         int loanId;
+        String email;
         double loanAmount;
         String loanStatus;
         boolean paymentExists;
 
-        public Loan(int loanId, double loanAmount, String loanStatus, boolean paymentExists) {
+        public Loan(int loanId, String email, double loanAmount, String loanStatus, boolean paymentExists) {
             this.loanId = loanId;
+            this.email = email;
             this.loanAmount = loanAmount;
             this.loanStatus = loanStatus;
             this.paymentExists = paymentExists;
         }
     }
 
-    public static class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.LoanViewHolder> {
+    public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.LoanViewHolder> {
+
         private Context context;
         private List<Loan> loans;
 
@@ -124,35 +131,36 @@ public class LoanInformationActivity extends AppCompatActivity {
             this.loans = loans;
         }
 
+        @NonNull
         @Override
-        public LoanViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.loan_item, parent, false);
+        public LoanViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.loan_item, parent, false);
             return new LoanViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(LoanViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull LoanViewHolder holder, int position) {
             Loan loan = loans.get(position);
-            holder.loanIdTextView.setText("Loan ID: " + loan.loanId);
-            holder.loanAmountTextView.setText("Amount: ₹" + loan.loanAmount);
-            holder.loanStatusTextView.setText("Status: " + loan.loanStatus);
+            holder.loanIdTextView.setText(loan.loanId + ".");
+            holder.loanIdEmail.setText(loan.email);
+            holder.loanStatusTextView.setText(loan.loanStatus);
+            holder.loanAmountTextView.setText("₹ " + loan.loanAmount);
+
+            if (loan.paymentExists) {
+                holder.viewDetailsButton.setText("Details");
+                holder.viewDetailsButton.setEnabled(true);
+                holder.viewDetailsButton.setBackgroundColor(ContextCompat.getColor(context, R.color.green));
+            } else {
+                holder.viewDetailsButton.setText("NA");
+                holder.viewDetailsButton.setEnabled(false);
+                holder.viewDetailsButton.setBackgroundColor(ContextCompat.getColor(context, R.color.light_gray));
+            }
 
             holder.viewDetailsButton.setOnClickListener(v -> {
                 Intent intent = new Intent(context, LoanPaymentActivity.class);
                 intent.putExtra("loanId", loan.loanId);
                 context.startActivity(intent);
             });
-
-            if (loan.paymentExists) {
-                holder.viewDetailsButton.setVisibility(View.VISIBLE);
-                holder.viewDetailsButton.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, LoanPaymentActivity.class);
-                    intent.putExtra("loanId", loan.loanId);
-                    context.startActivity(intent);
-                });
-            } else {
-                holder.viewDetailsButton.setVisibility(View.GONE);
-            }
         }
 
         @Override
@@ -160,15 +168,30 @@ public class LoanInformationActivity extends AppCompatActivity {
             return loans.size();
         }
 
-        public static class LoanViewHolder extends RecyclerView.ViewHolder {
-            TextView loanIdTextView, loanAmountTextView, loanStatusTextView;
-            ImageButton viewDetailsButton;
+        private int getStatusColor(String status) {
+            switch (status) {
+                case "approved":
+                    return ContextCompat.getColor(context, R.color.green);
+                case "rejected":
+                    return ContextCompat.getColor(context, R.color.red);
+                default:
+                    return ContextCompat.getColor(context, R.color.black);
+            }
+        }
 
-            public LoanViewHolder(View itemView) {
+        public class LoanViewHolder extends RecyclerView.ViewHolder {
+            public TextView loanIdTextView;
+            public TextView loanStatusTextView;
+            public TextView loanAmountTextView;
+            public Button viewDetailsButton;
+            public TextView loanIdEmail;
+
+            public LoanViewHolder(@NonNull View itemView) {
                 super(itemView);
                 loanIdTextView = itemView.findViewById(R.id.loanIdTextView);
-                loanAmountTextView = itemView.findViewById(R.id.loanAmountTextView);
+                loanIdEmail = itemView.findViewById(R.id.loanIdEmail);
                 loanStatusTextView = itemView.findViewById(R.id.loanStatusTextView);
+                loanAmountTextView = itemView.findViewById(R.id.loanAmountTextView);
                 viewDetailsButton = itemView.findViewById(R.id.viewDetailsButton);
             }
         }
