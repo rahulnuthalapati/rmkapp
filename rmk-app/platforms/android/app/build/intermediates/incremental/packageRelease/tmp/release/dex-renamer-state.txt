@@ -1,4 +1,0 @@
-#Sun Sep 15 21:55:21 EDT 2024
-base.0=E\:\\home\\dinesh\\rmk-app\\platforms\\android\\app\\build\\intermediates\\dex\\release\\mergeDexRelease\\classes.dex
-path.0=classes.dex
-renamed.0=classes.dex
