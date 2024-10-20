@@ -1,137 +1,111 @@
-SheRise: Women's Finance Hub
+# Empower: Women's Finance Hub
 
-![alt text](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Empower is a full-stack web and mobile application designed to simplify the loan application process and financial management for women beneficiaries, while streamlining the workflow for bank employees and managers. It provides a platform for secure communication, efficient loan processing, and empowerment through financial inclusion.
+Empower is a full-stack web and mobile application designed to simplify the loan application process and financial management for women beneficiaries, while streamlining the workflow for bank employees and managers.  It provides a platform for secure communication, efficient loan processing, and empowerment through financial inclusion.
 
-Table of Contents
+## Table of Contents
 
-Features
+* [Features](#features)
+* [Technologies Used](#technologies-used)
+* [Architecture](#architecture)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Contributing](#contributing)
+* [License](#license)
 
-Technologies Used
+## Features
 
-Architecture
+**For Beneficiaries:**
 
-Installation
+* **Easy Loan Application:**  Submit loan applications online with a user-friendly interface and upload supporting documents securely.
+* **Real-time Application Tracking:** Monitor the status of loan applications and receive updates at every stage.
+* **Loan Information Management:** View loan details, payment history, and upcoming dues.
+* **Economic Activity Tracking:** Record business revenues, expenses, and profit margins to track performance. 
+* **Income and Savings Management:** Store and update income sources, savings account details, and savings balances. 
+* **Direct Communication:** Chat with bank employees and managers for quick answers and support. 
+* **Feedback System:** Share feedback and suggestions to improve the platform.
+* **Profile Management:**  Update personal information, change passwords, and manage account settings.
 
-Usage
+**For Bank Employees:**
 
-Contributing
+* **Beneficiary Profiles Access:** View detailed profiles of beneficiaries, including financial information and loan history.
+* **Loan Management Dashboard:**  Review and manage loan applications, verifying documents and updating statuses (pending, verified, approved, rejected, disbursed, completed).
+* **Payment Recording:**  Easily record loan payments made by beneficiaries. 
 
-License
+**For Managers:**
 
-Features
+* **Overall Loan Oversight:**  Gain a comprehensive view of all active loans and beneficiaries.
+* **Loan Status Control:** Modify loan statuses, approve disbursements, and manage the loan lifecycle.
+* **Feedback Monitoring:** Access and review feedback submitted by beneficiaries.
 
-For Beneficiaries:
+## Technologies Used
 
-Easy Loan Application: Submit loan applications online with a user-friendly interface and upload supporting documents securely.
+**Backend:**
 
-Real-time Application Tracking: Monitor the status of loan applications and receive updates at every stage.
+* **Python (Flask):**  Provides a lightweight web framework to build RESTful APIs.
+* **MySQL:** A relational database management system for secure and efficient data storage.
 
-Loan Information Management: View loan details, payment history, and upcoming dues.
+**Frontend:**
 
-Economic Activity Tracking: Record business revenues, expenses, and profit margins to track performance.
+* **HTML, CSS, JavaScript:**  Standard web technologies used for building the user interface.
+* **Jinja2:** A templating engine used with Flask for dynamic HTML generation.
 
-Income and Savings Management: Store and update income sources, savings account details, and savings balances.
+**Mobile:**
 
-Direct Communication: Chat with bank employees and managers for quick answers and support.
+* **Android Studio (Java/Kotlin):** The development environment used for building the native Android application. 
 
-Feedback System: Share feedback and suggestions to improve the platform.
+**Communication:**
 
-Profile Management: Update personal information, change passwords, and manage account settings.
+* **REST API:** Enables seamless communication between the backend server, web frontend, and mobile app.
 
-For Bank Employees:
-
-Beneficiary Profiles Access: View detailed profiles of beneficiaries, including financial information and loan history.
-
-Loan Management Dashboard: Review and manage loan applications, verifying documents and updating statuses (pending, verified, approved, rejected, disbursed, completed).
-
-Payment Recording: Easily record loan payments made by beneficiaries.
-
-For Managers:
-
-Overall Loan Oversight: Gain a comprehensive view of all active loans and beneficiaries.
-
-Loan Status Control: Modify loan statuses, approve disbursements, and manage the loan lifecycle.
-
-Feedback Monitoring: Access and review feedback submitted by beneficiaries.
-
-Technologies Used
-
-Backend:
-
-Python (Flask): Provides a lightweight web framework to build RESTful APIs.
-
-MySQL: A relational database management system for secure and efficient data storage.
-
-Frontend:
-
-HTML, CSS, JavaScript: Standard web technologies used for building the user interface.
-
-Jinja2: A templating engine used with Flask for dynamic HTML generation.
-
-Mobile:
-
-Android Studio (Java/Kotlin): The development environment used for building the native Android application.
-
-Communication:
-
-REST API: Enables seamless communication between the backend server, web frontend, and mobile app.
-
-Architecture
+## Architecture
 
 The application follows a client-server model, where:
 
-The Flask backend serves as the server, exposing REST APIs to handle requests from both the web and mobile clients.
-
-The MySQL database stores all the application data.
-
-The web frontend and Android application act as clients, interacting with the backend through API calls.
+* **The Flask backend** serves as the server, exposing REST APIs to handle requests from both the web and mobile clients.
+* **The MySQL database** stores all the application data.
+* **The web frontend** and **Android application** act as clients, interacting with the backend through API calls.
 
 This separation of concerns allows for modularity and scalability.
 
-Installation
+## Installation
 
-Prerequisites:
+**Prerequisites:**
 
-Python 3.7 or higher
+* Python 3.7 or higher
+* MySQL server
+* Android Studio
 
-MySQL server
+**Steps:**
 
-Android Studio
+1. Clone the repository: `git clone https://github.com/your-username/Empower.git`
+2. Install Python dependencies: `pip install -r requirements.txt`
+3. Configure the MySQL database connection in the `config.py` file.
+4. Create the database tables using the SQL schema provided in `schema.sql`.
+5. Run the Flask app: `flask run` 
+6. Open the Android project in Android Studio and build the APK.
 
-Steps:
+## Usage
 
-Clone the repository: git clone https://github.com/your-username/Empower.git
+**Web Application:** 
 
-Install Python dependencies: pip install -r requirements.txt
+Access the web application by visiting `http://127.0.0.1:5000/` in your browser.
 
-Configure the MySQL database connection in the config.py file.
+**Android Application:**
 
-Create the database tables using the SQL schema provided in schema.sql.
+Install the APK on your Android device. 
 
-Run the Flask app: flask run
+## Contributing
 
-Open the Android project in Android Studio and build the APK.
+We welcome contributions to Empower!  Please feel free to open issues or submit pull requests.
 
-Usage
+**Guidelines:**
 
-Web Application:
+* Follow the project's coding conventions.
+* Write clear and concise code.
+* Add unit tests for new functionality.
 
-Access the web application by visiting http://127.0.0.1:5000/ in your browser.
+## License
 
-Android Application:
-
-Install the APK on your Android device.
-
-Contributing
-
-We welcome contributions to Empower! Please feel free to open issues or submit pull requests.
-
-Guidelines:
-
-Follow the project's coding conventions.
-
-Write clear and concise code.
-
-Add unit tests for new functionality.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
