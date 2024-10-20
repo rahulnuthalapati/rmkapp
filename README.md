@@ -1,8 +1,6 @@
 # SheRise: Women's Finance Hub
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Empower is a full-stack web and mobile application designed to simplify the loan application process and financial management for women beneficiaries, while streamlining the workflow for bank employees and managers.  It provides a platform for secure communication, efficient loan processing, and empowerment through financial inclusion.
+SheRise is a full-stack web and mobile application designed to simplify the loan application process and financial management for women beneficiaries, while streamlining the workflow for bank employees and managers.  It provides a platform for secure communication, efficient loan processing, and empowerment through financial inclusion.
 
 ## Table of Contents
 
@@ -98,14 +96,10 @@ Install the APK on your Android device.
 
 ## Contributing
 
-We welcome contributions to Empower!  Please feel free to open issues or submit pull requests.
+We welcome contributions to SheRise!  Please feel free to open issues or submit pull requests.
 
 **Guidelines:**
 
 * Follow the project's coding conventions.
 * Write clear and concise code.
 * Add unit tests for new functionality.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
