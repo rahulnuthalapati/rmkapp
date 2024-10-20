@@ -1,4 +1,4 @@
-# Empower: Women's Finance Hub
+# SheRise: Women's Finance Hub
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
